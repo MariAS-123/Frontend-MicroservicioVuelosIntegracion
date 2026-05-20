@@ -105,9 +105,10 @@ export const getAsientosVueloApi = (idVuelo, params = {}) =>
     params: limpiarParams(params),
   })
 
-export const getAsientoVueloDetalleApi = (idVuelo, idAsiento) =>
+export const getAsientoVueloDetalleApi = (idVuelo, idAsiento, config = {}) =>
   apiClient.get(
     `/vuelos/${validarIdPositivo('El id del vuelo', idVuelo)}/asientos/${validarIdPositivo('El id del asiento', idAsiento)}`,
+    config,
   )
 
 export const createAsientoVueloApi = (idVuelo, payload) =>

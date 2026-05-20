@@ -58,6 +58,14 @@ function normalizarBoleto(item) {
 
   return {
     idBoleto: deepValue(item, ['idBoleto', 'id_boleto', 'id']) || null,
+    idReserva:
+      deepValue(item, ['idReserva', 'id_reserva']) ||
+      deepValue(vuelo, ['idReserva', 'id_reserva']) ||
+      null,
+    codigoReserva:
+      deepValue(item, ['codigoReserva', 'codigo_reserva']) ||
+      deepValue(vuelo, ['codigoReserva', 'codigo_reserva']) ||
+      '',
     numeroBoleto:
       deepValue(item, ['numeroBoleto', 'numero_boleto', 'codigoBoleto']) ||
       `BO-${deepValue(item, ['idBoleto', 'id_boleto', 'id']) || '001'}`,
@@ -160,7 +168,13 @@ async function cargarBoletosDeReservas(reservasBase) {
       .map(async (reserva) => {
         try {
           const respuesta = await getClienteReservaBoletosApi(reserva.idReserva)
-          return extraerBoletosRespuesta(respuesta)
+          return extraerBoletosRespuesta(respuesta).map((boleto) => ({
+            ...boleto,
+            idReserva: deepValue(boleto, ['idReserva', 'id_reserva']) || reserva.idReserva,
+            codigoReserva: deepValue(boleto, ['codigoReserva', 'codigo_reserva']) || reserva.codigoReserva,
+            numeroVuelo: deepValue(boleto, ['numeroVuelo', 'numero_vuelo']) || reserva.numeroVuelo,
+            fechaVuelo: deepValue(boleto, ['fechaVuelo', 'fecha_vuelo']) || reserva.fecha,
+          }))
         } catch {
           return []
         }
@@ -227,6 +241,10 @@ async function cargarBoletos() {
       boletos = await cargarBoletosDeReservas(reservasBase)
     }
 
+    if (boletos.length && boletos.every((item) => !deepValue(item, ['idReserva', 'id_reserva']) && !deepValue(item, ['codigoReserva', 'codigo_reserva']))) {
+      boletos = await cargarBoletosDeReservas(reservasBase)
+    }
+
     const boletosAgrupados = new Map()
 
     boletos.forEach((item) => {
@@ -234,19 +252,24 @@ async function cargarBoletos() {
         deepValue(item, ['idReserva', 'id_reserva']) ||
         deepValue(item, ['vuelo', 'idReserva', 'id_reserva']) ||
         null
+      const codigoReserva = deepValue(item, ['codigoReserva', 'codigo_reserva']) || ''
 
-      if (!idReserva) return
+      if (!idReserva && !codigoReserva) return
 
-      const actuales = boletosAgrupados.get(String(idReserva)) || []
-      const reserva = reservasBase.find((entry) => String(entry.idReserva) === String(idReserva))
+      const clave = String(idReserva || codigoReserva)
+      const actuales = boletosAgrupados.get(clave) || []
+      const reserva = reservasBase.find((entry) =>
+        String(entry.idReserva) === String(idReserva) ||
+        String(entry.codigoReserva || '') === String(codigoReserva),
+      )
       actuales.push(...completarAsientosConLocal(reserva, [normalizarBoleto(item)]))
-      boletosAgrupados.set(String(idReserva), actuales)
+      boletosAgrupados.set(clave, actuales)
     })
 
     reservasConBoletos.value = reservasBase
       .map((reserva) => ({
         ...reserva,
-        boletos: boletosAgrupados.get(String(reserva.idReserva)) || [],
+        boletos: boletosAgrupados.get(String(reserva.idReserva)) || boletosAgrupados.get(String(reserva.codigoReserva)) || [],
       }))
       .filter((reserva) => reserva.boletos.length)
   } catch (err) {

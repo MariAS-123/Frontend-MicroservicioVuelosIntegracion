@@ -23,8 +23,8 @@ function limpiarParams(params = {}) {
 export const getPasajerosApi = (params = {}) =>
   apiClient.get('/pasajeros', { params: limpiarParams(params) })
 
-export const getPasajeroApi = (idPasajero) =>
-  apiClient.get(`/pasajeros/${idPasajero}`)
+export const getPasajeroApi = (idPasajero, config = {}) =>
+  apiClient.get(`/pasajeros/${idPasajero}`, config)
 
 export const createPasajeroApi = (payload) =>
   apiClient.post('/pasajeros', payload)

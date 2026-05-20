@@ -3,6 +3,8 @@ import { computed, onMounted, ref } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { getClienteReservaDetalleApi } from '@/api/reservas.api'
 import { getClienteReservaFacturaApi } from '@/api/facturas.api'
+import { getPasajeroApi } from '@/api/pasajeros.api'
+import { getAsientoVueloDetalleApi } from '@/api/vuelos.api'
 import { deepValue, extractItems, longDate, money, shortTime } from '@/utils/portalCliente'
 
 const route = useRoute()
@@ -64,6 +66,8 @@ function normalizarDetalle(payload) {
     ciudadOrigen: primero(deepValue(reserva, ['ciudadOrigen', 'ciudad_origen']), deepValue(vuelo, ['ciudadOrigen', 'ciudad_origen'])) || '',
     ciudadDestino: primero(deepValue(reserva, ['ciudadDestino', 'ciudad_destino']), deepValue(vuelo, ['ciudadDestino', 'ciudad_destino'])) || '',
     pasajeros: pasajeros.map((item, index) => ({
+      idPasajero: deepValue(item, ['idPasajero', 'id_pasajero']) || null,
+      idAsiento: deepValue(item, ['idAsiento', 'id_asiento']) || null,
       nombre:
         [
           deepValue(item, ['nombrePasajero', 'nombre_pasajero', 'nombres', 'nombre']),
@@ -77,6 +81,56 @@ function normalizarDetalle(payload) {
         ) || '',
       documento: deepValue(item, ['numeroDocumentoPasajero', 'numero_documento_pasajero', 'documento', 'numeroDocumento', 'numero_documento']) || '',
     })),
+  }
+}
+
+async function enriquecerPasajeros(detalleNormalizado) {
+  const idVuelo = Number(String(detalleNormalizado.numeroVuelo || '').replace(/\D/g, '')) || null
+
+  const pasajeros = await Promise.all(
+    detalleNormalizado.pasajeros.map(async (pasajero) => {
+      let pasajeroApi = null
+      let asientoApi = null
+
+      if (pasajero.idPasajero) {
+        try {
+          const respuesta = await getPasajeroApi(pasajero.idPasajero, { skipAuthRedirect: true })
+          pasajeroApi = respuesta?.data?.data ?? respuesta?.data ?? null
+        } catch {
+          pasajeroApi = null
+        }
+      }
+
+      if (idVuelo && pasajero.idAsiento) {
+        try {
+          const respuesta = await getAsientoVueloDetalleApi(idVuelo, pasajero.idAsiento, { skipAuthRedirect: true })
+          asientoApi = respuesta?.data?.data ?? respuesta?.data ?? null
+        } catch {
+          asientoApi = null
+        }
+      }
+
+      const nombreReal = [
+        deepValue(pasajeroApi, ['nombrePasajero', 'nombre_pasajero', 'nombres', 'nombre']),
+        deepValue(pasajeroApi, ['apellidoPasajero', 'apellido_pasajero', 'apellidos', 'apellido']),
+      ].filter(Boolean).join(' ').trim()
+
+      return {
+        ...pasajero,
+        nombre: nombreReal || pasajero.nombre,
+        asiento:
+          deepValue(asientoApi, ['numeroAsiento', 'numero_asiento', 'codigoAsiento', 'codigo_asiento', 'asiento']) ||
+          pasajero.asiento,
+        documento:
+          deepValue(pasajeroApi, ['numeroDocumentoPasajero', 'numero_documento_pasajero', 'numeroIdentificacion', 'numero_identificacion', 'documento']) ||
+          pasajero.documento,
+      }
+    }),
+  )
+
+  return {
+    ...detalleNormalizado,
+    pasajeros,
   }
 }
 
@@ -122,7 +176,7 @@ async function cargarDetalle() {
     } catch {
       // Si no hay reserva local seleccionada, usamos solo la respuesta del Bus.
     }
-    detalle.value = detalleNormalizado
+    detalle.value = await enriquecerPasajeros(detalleNormalizado)
 
     if (facturaResp.status === 'fulfilled') {
       factura.value = normalizarFactura(extraerPrimerObjeto(facturaResp.value))
