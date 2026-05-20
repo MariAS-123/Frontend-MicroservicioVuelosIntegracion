@@ -1,6 +1,9 @@
 import axios from 'axios'
 
-const apiBaseUrl = import.meta.env.VITE_API_URL || '	https://middlewaremicroserviciovuelos-bpf7bsgqh8g2cea5.eastus-01.azurewebsites.net/api/v1'
+const apiBaseUrl = (
+  import.meta.env.VITE_API_URL ||
+  'https://middlewaremicroserviciovuelos-bpf7bsgqh8g2cea5.eastus-01.azurewebsites.net/api/v1'
+).trim()
 const apiClient = axios.create({
   baseURL: apiBaseUrl.replace(/\/$/, ''),
   headers: {

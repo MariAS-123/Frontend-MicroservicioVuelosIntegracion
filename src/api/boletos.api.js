@@ -10,10 +10,10 @@ export const getBoletosApi = (params = {}, config = {}) =>
   })
 
 export const getClienteBoletosApi = () =>
-  apiClient.get('/portal/cliente/boletos')
+  apiClient.get('/portal/cliente/boletos', { skipAuthRedirect: true })
 
 export const getClienteReservaBoletosApi = (idReserva) =>
-  apiClient.get(`/portal/cliente/reservas/${idReserva}/boleto`)
+  apiClient.get(`/portal/cliente/reservas/${idReserva}/boleto`, { skipAuthRedirect: true })
 
 export const getBoletoApi = (idBoleto) =>
   apiClient.get(`/boletos/${idBoleto}`)
