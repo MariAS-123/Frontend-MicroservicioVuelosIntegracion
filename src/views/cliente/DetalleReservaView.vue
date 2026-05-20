@@ -12,8 +12,19 @@ const cargando = ref(true)
 const error = ref('')
 const detalle = ref(null)
 const factura = ref(null)
+const KEY_RESERVA_DETALLE = 'mpas_reserva_detalle'
 
 const pasajeroPrincipal = computed(() => detalle.value?.pasajeros?.[0] || null)
+
+function primero(...valores) {
+  return valores.find((valor) => valor !== undefined && valor !== null && String(valor).trim() !== '')
+}
+
+function extraerPrimerObjeto(payload) {
+  const data = payload?.data?.data ?? payload?.data ?? payload ?? {}
+  const items = extractItems(data)
+  return items[0] ?? data
+}
 
 function duracionLegible(minutos) {
   const total = Number(minutos || 0)
@@ -26,23 +37,45 @@ function duracionLegible(minutos) {
 
 function normalizarDetalle(payload) {
   const data = payload?.data?.data ?? payload?.data ?? payload ?? {}
-  const vuelo = deepValue(data, ['vuelo']) || {}
-  const pasajeros = extractItems(deepValue(data, ['pasajeros']) || data.pasajeros || [])
+  const reserva = deepValue(data, ['reserva']) || data
+  const vuelo = deepValue(data, ['vuelo']) || deepValue(reserva, ['vuelo']) || {}
+  const detalles = deepValue(data, ['detalles', 'detalleReserva', 'detallesReserva']) || deepValue(reserva, ['detalles']) || []
+  const pasajeros = extractItems(deepValue(data, ['pasajeros']) || data.pasajeros || detalles || [])
+  const idVuelo = deepValue(reserva, ['idVuelo', 'id_vuelo']) || deepValue(vuelo, ['idVuelo', 'id_vuelo'])
 
   return {
-    codigoReserva: deepValue(data, ['codigoReserva', 'codigo_reserva']) || '',
-    numeroVuelo: deepValue(data, ['numeroVuelo', 'numero_vuelo']) || deepValue(vuelo, ['numeroVuelo', 'numero_vuelo']) || '',
-    fechaInicio: deepValue(data, ['fechaInicio', 'fecha_inicio']) || deepValue(vuelo, ['fechaInicio', 'fechaHoraSalida', 'fecha_hora_salida']) || '',
-    fechaFin: deepValue(data, ['fechaFin', 'fecha_fin']) || deepValue(vuelo, ['fechaFin', 'fechaHoraLlegada', 'fecha_hora_llegada']) || '',
-    duracionMin: deepValue(data, ['duracionMin', 'duracion_min']) || deepValue(vuelo, ['duracionMin', 'duracion_min']) || 0,
-    codigoOrigen: deepValue(data, ['codigoOrigen', 'codigo_origen']) || deepValue(vuelo, ['codigoOrigen', 'codigo_origen']) || '',
-    codigoDestino: deepValue(data, ['codigoDestino', 'codigo_destino']) || deepValue(vuelo, ['codigoDestino', 'codigo_destino']) || '',
-    ciudadOrigen: deepValue(data, ['ciudadOrigen', 'ciudad_origen']) || deepValue(vuelo, ['ciudadOrigen', 'ciudad_origen']) || '',
-    ciudadDestino: deepValue(data, ['ciudadDestino', 'ciudad_destino']) || deepValue(vuelo, ['ciudadDestino', 'ciudad_destino']) || '',
+    codigoReserva: primero(deepValue(reserva, ['codigoReserva', 'codigo_reserva']), deepValue(data, ['codigoReserva', 'codigo_reserva'])) || '',
+    numeroVuelo:
+      primero(
+        deepValue(reserva, ['numeroVuelo', 'numero_vuelo']),
+        deepValue(vuelo, ['numeroVuelo', 'numero_vuelo']),
+        idVuelo ? `Vuelo ${idVuelo}` : '',
+      ) || '',
+    fechaInicio:
+      primero(
+        deepValue(reserva, ['fechaInicio', 'fecha_inicio']),
+        deepValue(vuelo, ['fechaInicio', 'fechaHoraSalida', 'fecha_hora_salida']),
+        deepValue(reserva, ['fechaReservaUtc', 'fecha_reserva_utc']),
+      ) || '',
+    fechaFin: primero(deepValue(reserva, ['fechaFin', 'fecha_fin']), deepValue(vuelo, ['fechaFin', 'fechaHoraLlegada', 'fecha_hora_llegada'])) || '',
+    duracionMin: deepValue(reserva, ['duracionMin', 'duracion_min']) || deepValue(vuelo, ['duracionMin', 'duracion_min']) || 0,
+    codigoOrigen: primero(deepValue(reserva, ['codigoOrigen', 'codigo_origen']), deepValue(vuelo, ['codigoOrigen', 'codigo_origen'])) || '',
+    codigoDestino: primero(deepValue(reserva, ['codigoDestino', 'codigo_destino']), deepValue(vuelo, ['codigoDestino', 'codigo_destino'])) || '',
+    ciudadOrigen: primero(deepValue(reserva, ['ciudadOrigen', 'ciudad_origen']), deepValue(vuelo, ['ciudadOrigen', 'ciudad_origen'])) || '',
+    ciudadDestino: primero(deepValue(reserva, ['ciudadDestino', 'ciudad_destino']), deepValue(vuelo, ['ciudadDestino', 'ciudad_destino'])) || '',
     pasajeros: pasajeros.map((item, index) => ({
-      nombre: [deepValue(item, ['nombrePasajero', 'nombre_pasajero', 'nombres', 'nombre']), deepValue(item, ['apellidoPasajero', 'apellido_pasajero', 'apellidos', 'apellido'])].filter(Boolean).join(' ').trim() || `Pasajero ${index + 1}`,
-      asiento: deepValue(item, ['numeroAsiento', 'numero_asiento', 'asiento']) || '',
-      documento: deepValue(item, ['numeroDocumentoPasajero', 'numero_documento_pasajero', 'documento']) || '',
+      nombre:
+        [
+          deepValue(item, ['nombrePasajero', 'nombre_pasajero', 'nombres', 'nombre']),
+          deepValue(item, ['apellidoPasajero', 'apellido_pasajero', 'apellidos', 'apellido']),
+        ].filter(Boolean).join(' ').trim() ||
+        (deepValue(item, ['idPasajero', 'id_pasajero']) ? `Pasajero ${deepValue(item, ['idPasajero', 'id_pasajero'])}` : `Pasajero ${index + 1}`),
+      asiento:
+        primero(
+          deepValue(item, ['numeroAsiento', 'numero_asiento', 'asiento', 'codigoAsiento', 'codigo_asiento']),
+          deepValue(item, ['idAsiento', 'id_asiento']) ? `Asiento ${deepValue(item, ['idAsiento', 'id_asiento'])}` : '',
+        ) || '',
+      documento: deepValue(item, ['numeroDocumentoPasajero', 'numero_documento_pasajero', 'documento', 'numeroDocumento', 'numero_documento']) || '',
     })),
   }
 }
@@ -69,10 +102,30 @@ async function cargarDetalle() {
     ])
 
     if (detalleResp.status !== 'fulfilled') throw detalleResp.reason
-    detalle.value = normalizarDetalle(detalleResp.value)
+    let detalleNormalizado = normalizarDetalle(detalleResp.value)
+    try {
+      const local = JSON.parse(sessionStorage.getItem(KEY_RESERVA_DETALLE) || 'null')
+      if (local && String(local.idReserva || '') === String(idReserva)) {
+        const localNormalizado = normalizarDetalle(local)
+        detalleNormalizado = {
+          ...detalleNormalizado,
+          numeroVuelo: detalleNormalizado.numeroVuelo || localNormalizado.numeroVuelo,
+          fechaInicio: detalleNormalizado.fechaInicio || localNormalizado.fechaInicio,
+          fechaFin: detalleNormalizado.fechaFin || localNormalizado.fechaFin,
+          duracionMin: detalleNormalizado.duracionMin || localNormalizado.duracionMin,
+          codigoOrigen: detalleNormalizado.codigoOrigen || localNormalizado.codigoOrigen,
+          codigoDestino: detalleNormalizado.codigoDestino || localNormalizado.codigoDestino,
+          ciudadOrigen: detalleNormalizado.ciudadOrigen || localNormalizado.ciudadOrigen,
+          ciudadDestino: detalleNormalizado.ciudadDestino || localNormalizado.ciudadDestino,
+        }
+      }
+    } catch {
+      // Si no hay reserva local seleccionada, usamos solo la respuesta del Bus.
+    }
+    detalle.value = detalleNormalizado
 
     if (facturaResp.status === 'fulfilled') {
-      factura.value = normalizarFactura(facturaResp.value)
+      factura.value = normalizarFactura(extraerPrimerObjeto(facturaResp.value))
     } else {
       factura.value = {
         subtotal: 0,

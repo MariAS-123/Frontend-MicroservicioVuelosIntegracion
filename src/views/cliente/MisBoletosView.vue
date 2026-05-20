@@ -1,11 +1,11 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { getBoletosApi, getClienteBoletosApi, getClienteReservaBoletosApi } from '@/api/boletos.api'
-import { getClienteReservasApi, getReservaBoletosApi, getReservasApi } from '@/api/reservas.api'
+import { getClienteBoletosApi, getClienteReservaBoletosApi } from '@/api/boletos.api'
+import { getClienteReservasApi } from '@/api/reservas.api'
 import { useAutenticacionStore } from '@/stores/autenticacion.store'
 import { useClienteStore } from '@/stores/cliente.store'
-import { deepValue, extractItems, leerPortalReservas, longDate, resolveClienteId } from '@/utils/portalCliente'
+import { deepValue, extractItems, leerPortalReservas, longDate } from '@/utils/portalCliente'
 
 const router = useRouter()
 const auth = useAutenticacionStore()
@@ -143,43 +143,13 @@ function fallbackLocal() {
   })
 }
 
-function parametrosCliente() {
-  const idCliente = resolveClienteId(auth, cliente)
-
-  return {
-    IdCliente: idCliente || undefined,
-    idCliente: idCliente || undefined,
-    id_cliente: idCliente || undefined,
-    Page: 1,
-    PageSize: 100,
-    page: 1,
-    page_size: 100,
-  }
-}
-
 async function cargarReservasCliente() {
-  try {
-    const respuesta = await getClienteReservasApi()
-    const items = extractItems(respuesta)
-    if (items.length) return items
-  } catch {
-    // Fallback para ambientes donde no existe /portal/cliente/reservas.
-  }
-
-  const respuesta = await getReservasApi(parametrosCliente(), { skipAuthRedirect: true })
+  const respuesta = await getClienteReservasApi()
   return extractItems(respuesta)
 }
 
 async function cargarBoletosCliente() {
-  try {
-    const respuesta = await getClienteBoletosApi()
-    const items = extractItems(respuesta)
-    if (items.length) return items
-  } catch {
-    // Fallback para ambientes donde no existe /portal/cliente/boletos.
-  }
-
-  const respuesta = await getBoletosApi(parametrosCliente(), { skipAuthRedirect: true })
+  const respuesta = await getClienteBoletosApi()
   return extractItems(respuesta)
 }
 
@@ -192,12 +162,7 @@ async function cargarBoletosDeReservas(reservasBase) {
           const respuesta = await getClienteReservaBoletosApi(reserva.idReserva)
           return extraerBoletosRespuesta(respuesta)
         } catch {
-          try {
-            const respuesta = await getReservaBoletosApi(reserva.idReserva)
-            return extraerBoletosRespuesta(respuesta)
-          } catch {
-            return []
-          }
+          return []
         }
       }),
   )
@@ -210,12 +175,7 @@ async function cargarBoletosReserva(idReserva) {
   cargandoDetalle.value = true
 
   try {
-    let respuesta
-    try {
-      respuesta = await getClienteReservaBoletosApi(idReserva)
-    } catch {
-      respuesta = await getReservaBoletosApi(idReserva)
-    }
+    const respuesta = await getClienteReservaBoletosApi(idReserva)
     const local = reservasConBoletos.value.find((item) => String(item.idReserva) === String(idReserva))
     const boletos = completarAsientosConLocal(local, extraerBoletosRespuesta(respuesta).map(normalizarBoleto))
 
@@ -255,7 +215,13 @@ async function cargarBoletos() {
   try {
     const reservasItems = await cargarReservasCliente()
     const reservasBase = reservasItems.map(normalizarReserva)
-    let boletos = await cargarBoletosCliente()
+    let boletos = []
+
+    try {
+      boletos = await cargarBoletosCliente()
+    } catch {
+      boletos = []
+    }
 
     if (!boletos.length) {
       boletos = await cargarBoletosDeReservas(reservasBase)

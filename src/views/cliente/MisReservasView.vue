@@ -1,11 +1,11 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { getClienteReservasApi, getReservasApi } from '@/api/reservas.api'
-import { getBoletosApi, getClienteBoletosApi } from '@/api/boletos.api'
+import { getClienteReservasApi } from '@/api/reservas.api'
+import { getClienteBoletosApi } from '@/api/boletos.api'
 import { useAutenticacionStore } from '@/stores/autenticacion.store'
 import { useClienteStore } from '@/stores/cliente.store'
-import { deepValue, extractItems, leerPortalReservas, longDate, resolveClienteId, shortTime } from '@/utils/portalCliente'
+import { deepValue, extractItems, leerPortalReservas, longDate, shortTime } from '@/utils/portalCliente'
 
 const router = useRouter()
 const auth = useAutenticacionStore()
@@ -15,6 +15,7 @@ const cargando = ref(true)
 const error = ref('')
 const reservas = ref([])
 const KEY_CONFIRMACION = 'mpas_confirmacion'
+const KEY_RESERVA_DETALLE = 'mpas_reserva_detalle'
 
 const nombreVisible = computed(() =>
   cliente.nombreMostrado || auth.usuario?.username || 'Cliente',
@@ -164,43 +165,18 @@ function fallbackDesdeBoletos(payload) {
   return Array.from(agrupadas.values())
 }
 
-function parametrosCliente() {
-  const idCliente = resolveClienteId(auth, cliente)
-
-  return {
-    IdCliente: idCliente || undefined,
-    idCliente: idCliente || undefined,
-    id_cliente: idCliente || undefined,
-    Page: 1,
-    PageSize: 100,
-    page: 1,
-    page_size: 100,
-  }
+function verDetalleReserva(reserva) {
+  sessionStorage.setItem(KEY_RESERVA_DETALLE, JSON.stringify(reserva))
+  router.push({ name: 'cliente-reserva-detalle', params: { id: reserva.idReserva } })
 }
 
 async function cargarReservasCliente() {
-  try {
-    const respuesta = await getClienteReservasApi()
-    const items = extractItems(respuesta)
-    if (items.length) return items
-  } catch {
-    // Si el endpoint de portal no existe o falla, usamos el endpoint general filtrado por cliente.
-  }
-
-  const respuesta = await getReservasApi(parametrosCliente(), { skipAuthRedirect: true })
+  const respuesta = await getClienteReservasApi()
   return extractItems(respuesta)
 }
 
 async function cargarBoletosCliente() {
-  try {
-    const respuesta = await getClienteBoletosApi()
-    const items = extractItems(respuesta)
-    if (items.length) return items
-  } catch {
-    // Mismo fallback para instalaciones donde no existe /portal/cliente/boletos.
-  }
-
-  const respuesta = await getBoletosApi(parametrosCliente(), { skipAuthRedirect: true })
+  const respuesta = await getClienteBoletosApi()
   return extractItems(respuesta)
 }
 
@@ -303,7 +279,7 @@ onMounted(cargarReservas)
               v-if="reserva.idReserva"
               type="button"
               class="rounded-2xl border border-blue-accent px-5 py-3 font-semibold text-blue-accent transition-colors hover:bg-blue-accent hover:text-white"
-              @click="router.push({ name: 'cliente-reserva-detalle', params: { id: reserva.idReserva } })"
+              @click="verDetalleReserva(reserva)"
             >
               Ver detalles
             </button>

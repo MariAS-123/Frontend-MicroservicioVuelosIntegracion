@@ -1,14 +1,11 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { getClienteFacturasApi, getFacturasApi } from '@/api/facturas.api'
-import { useAutenticacionStore } from '@/stores/autenticacion.store'
-import { useClienteStore } from '@/stores/cliente.store'
-import { deepValue, extractItems, longDate, money, resolveClienteId } from '@/utils/portalCliente'
+import { getClienteFacturasApi, getClienteReservaFacturaApi } from '@/api/facturas.api'
+import { getClienteReservasApi } from '@/api/reservas.api'
+import { deepValue, extractItems, longDate, money } from '@/utils/portalCliente'
 
 const router = useRouter()
-const auth = useAutenticacionStore()
-const cliente = useClienteStore()
 const cargando = ref(true)
 const error = ref('')
 const facturas = ref([])
@@ -44,31 +41,33 @@ function etiquetaEstado(estado) {
   return estado || 'Aprobada'
 }
 
-function parametrosCliente() {
-  const idCliente = resolveClienteId(auth, cliente)
-
-  return {
-    IdCliente: idCliente || undefined,
-    idCliente: idCliente || undefined,
-    id_cliente: idCliente || undefined,
-    Page: 1,
-    PageSize: 100,
-    page: 1,
-    page_size: 100,
-  }
-}
-
 async function cargarFacturasCliente() {
   try {
     const respuesta = await getClienteFacturasApi()
     const items = extractItems(respuesta)
     if (items.length) return items
   } catch {
-    // Fallback para cuando el Bus no expone /portal/cliente/facturas.
+    // Si el listado general del portal falla, probamos factura por reserva.
   }
 
-  const respuesta = await getFacturasApi(parametrosCliente(), { skipAuthRedirect: true })
-  return extractItems(respuesta)
+  const reservasRespuesta = await getClienteReservasApi()
+  const reservas = extractItems(reservasRespuesta)
+  const facturasPorReserva = await Promise.all(
+    reservas
+      .map((reserva) => deepValue(reserva, ['idReserva', 'id_reserva', 'id']))
+      .filter(Boolean)
+      .map(async (idReserva) => {
+        try {
+          const respuesta = await getClienteReservaFacturaApi(idReserva)
+          const items = extractItems(respuesta)
+          return items.length ? items : [respuesta?.data?.data ?? respuesta?.data].filter(Boolean)
+        } catch {
+          return []
+        }
+      }),
+  )
+
+  return facturasPorReserva.flat()
 }
 
 async function cargarFacturas() {
