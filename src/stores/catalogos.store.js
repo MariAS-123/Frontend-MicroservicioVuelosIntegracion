@@ -1,6 +1,7 @@
 import { computed, ref } from 'vue'
 import { defineStore } from 'pinia'
 import { getAeropuertosApi, getCiudadesApi, getPaisesApi } from '@/api/catalogos.api'
+import { deepValue, extractItems } from '@/utils/portalCliente'
 
 const CACHE_KEY = 'mpas_catalogos_cache'
 const CACHE_TTL = 1000 * 60 * 60 * 6
@@ -18,16 +19,51 @@ function guardarCache(payload) {
   localStorage.setItem(CACHE_KEY, JSON.stringify({ ...payload, timestamp: Date.now() }))
 }
 
-function normalizarLista(data) {
-  if (Array.isArray(data)) return data
-  if (Array.isArray(data?.items)) return data.items
-  if (Array.isArray(data?.resultados)) return data.resultados
-  if (Array.isArray(data?.records)) return data.records
-  return []
-}
-
 function limpiarNombreCatalogo(nombre = '') {
   return String(nombre).replace(/\d{6,}$/u, '').trim()
+}
+
+function textoCatalogo(valor, claves = []) {
+  if (!valor) return ''
+  if (typeof valor !== 'object') return limpiarNombreCatalogo(valor)
+
+  for (const clave of claves) {
+    const encontrado = valor?.[clave]
+    if (encontrado !== undefined && encontrado !== null && typeof encontrado !== 'object') {
+      return limpiarNombreCatalogo(encontrado)
+    }
+  }
+
+  return ''
+}
+
+function normalizarPais(item) {
+  return {
+    ...item,
+    idPais: deepValue(item, ['idPais', 'id_pais', 'id']) || null,
+    nombre: textoCatalogo(
+      deepValue(item, ['nombre', 'nombrePais', 'nombre_pais', 'paisNombre']),
+      ['nombre', 'nombrePais', 'nombre_pais'],
+    ),
+  }
+}
+
+function normalizarCiudad(item) {
+  const pais = deepValue(item, ['pais', 'Pais'])
+
+  return {
+    ...item,
+    idCiudad: deepValue(item, ['idCiudad', 'id_ciudad', 'id']) || null,
+    idPais: deepValue(item, ['idPais', 'id_pais', 'idPaisResidencia']) || deepValue(pais, ['idPais', 'id_pais', 'id']) || null,
+    nombre: textoCatalogo(
+      deepValue(item, ['nombre', 'nombreCiudad', 'nombre_ciudad', 'ciudadNombre']),
+      ['nombre', 'nombreCiudad', 'nombre_ciudad'],
+    ),
+    nombrePais: textoCatalogo(
+      deepValue(item, ['nombrePais', 'nombre_pais', 'paisNombre']) || pais,
+      ['nombre', 'nombrePais', 'nombre_pais'],
+    ),
+  }
 }
 
 export const useCatalogosStore = defineStore('catalogos', () => {
@@ -40,10 +76,10 @@ export const useCatalogosStore = defineStore('catalogos', () => {
 
   const opcionesAeropuertos = computed(() =>
     aeropuertos.value.map((a) => {
-      const ciudad = a.ciudad ?? a.nombreCiudad ?? a.ciudad_nombre ?? ''
-      const pais = a.pais ?? a.nombrePais ?? a.pais_nombre ?? ''
-      const codigo = a.codigoIata ?? a.codigo_iata ?? a.iata ?? ''
-      const nombre = limpiarNombreCatalogo(a.nombre ?? a.nombreAeropuerto ?? 'Aeropuerto')
+      const ciudad = textoCatalogo(a.ciudad ?? a.nombreCiudad ?? a.ciudad_nombre, ['nombre', 'nombreCiudad', 'nombre_ciudad'])
+      const pais = textoCatalogo(a.pais ?? a.nombrePais ?? a.pais_nombre, ['nombre', 'nombrePais', 'nombre_pais'])
+      const codigo = textoCatalogo(a.codigoIata ?? a.codigo_iata ?? a.iata)
+      const nombre = textoCatalogo(a.nombre ?? a.nombreAeropuerto, ['nombre', 'nombreAeropuerto']) || 'Aeropuerto'
       const partes = [codigo, nombre].filter(Boolean)
       const extras = [ciudad, pais].filter(Boolean).join(', ')
 
@@ -71,8 +107,8 @@ export const useCatalogosStore = defineStore('catalogos', () => {
 
     cargandoAeropuertos.value = true
     try {
-      const { data } = await getAeropuertosApi({ estado: 'ACTIVO', page: 1, page_size: 200 })
-      aeropuertos.value = normalizarLista(data?.data)
+      const respuesta = await getAeropuertosApi({ estado: 'ACTIVO', page: 1, page_size: 200 })
+      aeropuertos.value = extractItems(respuesta)
       guardarCache({ aeropuertos: aeropuertos.value })
     } finally {
       cargandoAeropuertos.value = false
@@ -85,8 +121,10 @@ export const useCatalogosStore = defineStore('catalogos', () => {
 
     cargandoPaises.value = true
     try {
-      const { data } = await getPaisesApi({ page: 1, page_size: 200 })
-      paises.value = normalizarLista(data?.data)
+      const respuesta = await getPaisesApi({ page: 1, page_size: 200 })
+      paises.value = extractItems(respuesta)
+        .map(normalizarPais)
+        .filter((pais) => pais.idPais && pais.nombre)
     } finally {
       cargandoPaises.value = false
     }
@@ -99,8 +137,10 @@ export const useCatalogosStore = defineStore('catalogos', () => {
       return ciudadesPorPais.value[key]
     }
 
-    const { data } = await getCiudadesApi({ id_pais: idPais, page: 1, page_size: 200 })
-    const ciudades = normalizarLista(data?.data)
+    const respuesta = await getCiudadesApi({ id_pais: idPais, page: 1, page_size: 200 })
+    const ciudades = extractItems(respuesta)
+      .map(normalizarCiudad)
+      .filter((ciudad) => ciudad.idCiudad && (!ciudad.idPais || String(ciudad.idPais) === key))
     ciudadesPorPais.value = {
       ...ciudadesPorPais.value,
       [key]: ciudades,

@@ -10,6 +10,7 @@ const route = useRoute()
 const router = useRouter()
 const catalogos = useCatalogosStore()
 const reserva = useReservaStore()
+const KEY_AEROLINEA_PROGRESO = 'aerolinea_progreso'
 
 const cargando = ref(true)
 const errorGeneral = ref('')
@@ -143,6 +144,20 @@ function continuarReserva() {
       ...vuelo.value,
     })
   }
+
+  try {
+    const progreso = JSON.parse(localStorage.getItem(KEY_AEROLINEA_PROGRESO) || 'null')
+    if (progreso?.idAsiento) {
+      reserva.setAsientos([
+        {
+          idAsiento: progreso.idAsiento,
+          numeroAsiento: progreso.numeroAsiento || `Asiento ${progreso.idAsiento}`,
+          precioExtra: Number(progreso.precioAsiento || 0),
+        },
+      ])
+    }
+  } catch {}
+
   router.push({ name: 'datos-pasajeros' })
 }
 

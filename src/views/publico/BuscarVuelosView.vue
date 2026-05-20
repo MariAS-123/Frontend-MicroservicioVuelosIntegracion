@@ -1,7 +1,7 @@
 <script setup>
 import { computed, onMounted, ref, watch } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
-import { buscarVuelosBookingApi } from '@/api/vuelos.api'
+import { buscarVuelosBookingApi, getVuelosApi } from '@/api/vuelos.api'
 import { useCatalogosStore } from '@/stores/catalogos.store'
 import { useReservaStore } from '@/stores/reserva.store'
 import { extractItems } from '@/utils/portalCliente'
@@ -28,8 +28,8 @@ const form = ref({
 })
 
 const opcionesAeropuertos = computed(() => catalogos.opcionesAeropuertos)
-const puedeBuscar = computed(() => !!form.value.origen && !!form.value.destino && !!form.value.salida)
-const listaVisible = computed(() => (puedeBuscar.value ? resultados.value : destacados.value))
+const filtrosActivos = computed(() => !!form.value.origen || !!form.value.destino || !!form.value.salida)
+const listaVisible = computed(() => (filtrosActivos.value ? resultados.value : destacados.value))
 const ESTADOS_VISIBLES_PUBLICO = new Set(['PROGRAMADO'])
 
 function normalizarLista(data) {
@@ -48,7 +48,22 @@ function obtenerCampo(obj, claves, fallback = null) {
 }
 
 function limpiarNombreCatalogo(nombre = '') {
+  if (!nombre || typeof nombre === 'object') return ''
   return String(nombre).replace(/\d{6,}$/u, '').trim()
+}
+
+function textoPlano(valor, claves = []) {
+  if (!valor) return ''
+  if (typeof valor !== 'object') return limpiarNombreCatalogo(valor)
+
+  for (const clave of claves) {
+    const encontrado = valor?.[clave]
+    if (encontrado !== undefined && encontrado !== null && typeof encontrado !== 'object') {
+      return limpiarNombreCatalogo(encontrado)
+    }
+  }
+
+  return ''
 }
 
 function moneda(valor) {
@@ -101,6 +116,12 @@ function codigoAeropuerto(id) {
 
 function nombreCiudadAeropuerto(id) {
   const aeropuerto = aeropuertoPorId(id)
+  const ciudad = textoPlano(
+    obtenerCampo(aeropuerto, ['ciudad', 'nombreCiudad', 'ciudad_nombre']),
+    ['nombre', 'nombreCiudad', 'nombre_ciudad'],
+  )
+  if (ciudad) return ciudad
+
   const nombre = obtenerCampo(aeropuerto, ['nombre', 'nombreAeropuerto'], 'Aeropuerto')
   return limpiarNombreCatalogo(nombre).replace(/^Aeropuerto\s+/i, '').trim() || 'Ciudad'
 }
@@ -108,8 +129,8 @@ function nombreCiudadAeropuerto(id) {
 function nombreAeropuerto(id) {
   const aeropuerto = aeropuertoPorId(id)
   if (!aeropuerto) return ''
-  const codigo = obtenerCampo(aeropuerto, ['codigoIata', 'codigo_iata', 'iata'], '')
-  const nombre = limpiarNombreCatalogo(obtenerCampo(aeropuerto, ['nombre', 'nombreAeropuerto'], ''))
+  const codigo = textoPlano(obtenerCampo(aeropuerto, ['codigoIata', 'codigo_iata', 'iata']))
+  const nombre = textoPlano(obtenerCampo(aeropuerto, ['nombre', 'nombreAeropuerto']))
   return [codigo, nombre].filter(Boolean).join(' - ')
 }
 
@@ -224,19 +245,54 @@ async function cargarVuelosPaginados(params = {}) {
   return acumulados
 }
 
+async function cargarVuelosGeneralesPaginados() {
+  const acumulados = []
+  const vistos = new Set()
+  const pageSize = 100
+  const maxPaginas = 40
+
+  for (let page = 1; page <= maxPaginas; page += 1) {
+    const respuesta = await getVuelosApi({
+      estado_vuelo: 'PROGRAMADO',
+      page,
+      page_size: pageSize,
+    })
+
+    const items = extractItems(respuesta)
+    if (!items.length) break
+
+    for (const item of items) {
+      const idVuelo = obtenerCampo(item, ['idVuelo', 'id_vuelo', 'id'])
+      const clave = String(idVuelo ?? `${page}-${acumulados.length}`)
+      if (vistos.has(clave)) continue
+      vistos.add(clave)
+      acumulados.push(item)
+    }
+
+    const { totalPages, currentPage } = extraerMetaPaginacion(respuesta)
+    if (totalPages > 0 && (currentPage || page) >= totalPages) break
+    if (items.length < pageSize) break
+  }
+
+  return acumulados
+}
+
 async function buscar() {
-  if (!puedeBuscar.value) return
   cargando.value = true
   errorGeneral.value = ''
 
   try {
-    const items = await cargarVuelosPaginados({
-      id_aeropuerto_origen: form.value.origen,
-      id_aeropuerto_destino: form.value.destino,
-      fecha_salida: form.value.salida,
-    })
+    const params = {
+      id_aeropuerto_origen: form.value.origen || undefined,
+      id_aeropuerto_destino: form.value.destino || undefined,
+      fecha_salida: form.value.salida || undefined,
+    }
+    const items = filtrosActivos.value
+      ? await cargarVuelosPaginados(params)
+      : await cargarVuelosGeneralesPaginados()
 
     resultados.value = items.map(normalizarVuelo).filter(esVueloVisiblePublico).sort(ordenarVuelos)
+    if (!filtrosActivos.value) destacados.value = resultados.value
 
     vueloExpandido.value = null
   } catch (error) {
@@ -251,7 +307,7 @@ async function buscar() {
 async function cargarDestacados() {
   cargandoDestacados.value = true
   try {
-    const items = await cargarVuelosPaginados()
+    const items = await cargarVuelosGeneralesPaginados()
 
     destacados.value = items.map(normalizarVuelo).filter(esVueloVisiblePublico).sort(ordenarVuelos)
   } catch {
@@ -316,7 +372,7 @@ watch(
 
 onMounted(async () => {
   await catalogos.cargarAeropuertos(true).catch(() => {})
-  if (puedeBuscar.value) await buscar()
+  if (filtrosActivos.value) await buscar()
   else await cargarDestacados()
 })
 </script>
@@ -384,17 +440,17 @@ onMounted(async () => {
           {{ errorGeneral }}
         </div>
 
-        <div v-else-if="!puedeBuscar && cargandoDestacados" class="rounded-[28px] bg-white p-10 text-center shadow-sm">
+        <div v-else-if="!filtrosActivos && cargandoDestacados" class="rounded-[28px] bg-white p-10 text-center shadow-sm">
           <div class="mx-auto h-9 w-9 animate-spin rounded-full border-4 border-blue-accent/20 border-t-blue-accent" />
-          <p class="mt-4 text-text-muted">Cargando vuelos destacados...</p>
+          <p class="mt-4 text-text-muted">Cargando vuelos programados...</p>
         </div>
 
         <div v-else-if="!listaVisible.length" class="rounded-[28px] bg-white p-10 text-center shadow-sm">
           <p class="text-lg font-semibold text-navy">
-            {{ puedeBuscar ? 'No encontramos vuelos programados para esa busqueda.' : 'Todavia no hay vuelos destacados para mostrar.' }}
+            {{ filtrosActivos ? 'No encontramos vuelos programados para esa busqueda.' : 'Todavia no hay vuelos programados para mostrar.' }}
           </p>
           <p class="mt-2 text-text-muted">
-            {{ puedeBuscar ? 'Prueba con otra fecha o una combinacion distinta de aeropuertos.' : 'Puedes aplicar tu busqueda con origen, destino y fecha.' }}
+            {{ filtrosActivos ? 'Prueba con otra fecha o una combinacion distinta de aeropuertos.' : 'Cuando existan vuelos en estado PROGRAMADO apareceran aqui.' }}
           </p>
         </div>
 

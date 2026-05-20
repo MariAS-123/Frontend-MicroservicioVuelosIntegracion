@@ -23,6 +23,8 @@ const CARGO_SERVICIO = 0
 const IVA = 0.15
 const FECHA_HOY = new Date().toISOString().split('T')[0]
 const KEY_CONFIRMACION = 'mpas_confirmacion'
+const KEY_AEROLINEA_PROGRESO = 'aerolinea_progreso'
+const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://middlewaremicroserviciovuelos-bpf7bsgqh8g2cea5.eastus-01.azurewebsites.net/api/v1').replace(/\/$/, '')
 
 const mostrarModalAuth = ref(false)
 const tabAuth = ref('login')
@@ -111,7 +113,8 @@ const itemsPago = computed(() =>
   pasajeros.value.map((pasajero, indice) => {
     const asiento = asientos.value[indice] || null
     const bag = equipaje.value[indice] || null
-    const subtotalLinea = Number(vuelo.value?.precioBase || 0) + Number(asiento?.precioExtra || 0)
+    const costoEquipaje = bag?.equipajeBodega ? COSTO_BODEGA : 0
+    const subtotalLinea = Number(vuelo.value?.precioBase || 0) + Number(asiento?.precioExtra || 0) + costoEquipaje
 
     return {
       indice,
@@ -119,6 +122,7 @@ const itemsPago = computed(() =>
       pasajero,
       asiento,
       equipaje: bag,
+      costoEquipaje,
       subtotalLinea,
       ivaLinea: Number((subtotalLinea * IVA).toFixed(2)),
       totalLinea: Number((subtotalLinea * (1 + IVA)).toFixed(2)),
@@ -177,6 +181,39 @@ function persistirPasajeroBackend(indice, idPasajero) {
   )
 
   reserva.setPasajeros(actualizados)
+}
+
+function logReservaBackend(etiqueta, detalle) {
+  console.info(`[confirmar-reserva:${etiqueta}]`, JSON.stringify(detalle, null, 2))
+}
+
+function logRequestReservaBackend({ endpoint, method = 'POST', payload }) {
+  logReservaBackend('request', {
+    method,
+    endpoint,
+    url: `${API_BASE_URL}${endpoint}`,
+    payload,
+  })
+}
+
+function logResponseReservaBackend({ endpoint, method = 'POST', response }) {
+  logReservaBackend('response', {
+    method,
+    endpoint,
+    status: response?.status ?? null,
+    data: response?.data ?? null,
+  })
+}
+
+function logResumenPagoUi() {
+  logReservaBackend('resumen-ui', {
+    tarifaVuelo: subtotalVuelo.value,
+    equipajeBodega: totalBodega.value,
+    subtotal: subtotalGeneral.value,
+    iva: ivaGeneral.value,
+    cargoServicio: CARGO_SERVICIO,
+    totalPagado: totalPagar.value,
+  })
 }
 
 function parseJwtPayload(token) {
@@ -447,6 +484,8 @@ async function ejecutarCompraReal() {
   }
 
   try {
+    logResumenPagoUi()
+
     estadoProceso.value = 'Creando pasajeros...'
     const pasajerosCreados = []
 
@@ -469,7 +508,18 @@ async function ejecutarCompraReal() {
           observacionesPasajero: item.pasajero.observaciones_pasajero?.trim() || null,
         }
 
-        const { data } = await createPasajeroApi(payloadPasajero)
+        logRequestReservaBackend({
+          endpoint: '/pasajeros',
+          payload: payloadPasajero,
+        })
+
+        const pasajeroResp = await createPasajeroApi(payloadPasajero)
+        logResponseReservaBackend({
+          endpoint: '/pasajeros',
+          response: pasajeroResp,
+        })
+
+        const { data } = pasajeroResp
         const pasajeroReal = data?.data || {}
         idPasajero = pasajeroReal.idPasajero ?? pasajeroReal.id_pasajero ?? pasajeroReal.id
 
@@ -495,11 +545,9 @@ async function ejecutarCompraReal() {
     const payload = {
       idCliente,
       idVuelo: idVueloReserva,
-      fechaInicio: vuelo.value.fechaHoraSalida,
-      fechaFin: vuelo.value.fechaHoraLlegada,
-      subtotalReserva: subtotalVuelo.value,
-      valorIva: Number((subtotalVuelo.value * IVA).toFixed(2)),
-      totalReserva: Number((subtotalVuelo.value * (1 + IVA)).toFixed(2)),
+      subtotalReserva: subtotalGeneral.value,
+      valorIva: ivaGeneral.value,
+      totalReserva: Number((subtotalGeneral.value + ivaGeneral.value).toFixed(2)),
       origenCanalReserva: 'BOOKING',
       contactoEmail: pasajeros.value[0]?.email_contacto_pasajero || registerForm.value.correo || auth.usuario?.correo,
       contactoTelefono: pasajeros.value[0]?.telefono_contacto_pasajero || registerForm.value.telefono,
@@ -513,9 +561,17 @@ async function ejecutarCompraReal() {
       })),
     }
 
-    console.log('PAYLOAD RESERVA:', JSON.stringify(payload))
+    logRequestReservaBackend({
+      endpoint: '/reservas',
+      payload,
+    })
 
     const reservaResp = await createReservaApi(payload)
+    logResponseReservaBackend({
+      endpoint: '/reservas',
+      response: reservaResp,
+    })
+
     const reservaReal = reservaResp.data?.data || {}
     const idReserva = reservaReal.idReserva ?? reservaReal.id_reserva ?? reservaReal.id
 
@@ -536,27 +592,40 @@ async function ejecutarCompraReal() {
 
       if (!detalle?.idDetalle) throw new Error('No se pudo asociar el id_detalle para el equipaje.')
 
-      equipajePayload.push({
-        id_detalle: detalle.idDetalle,
-        tipo: 'MANO',
-        peso_kg: 10,
-        descripcion_equipaje: 'Equipaje de mano incluido',
-      })
-
       if (item.equipaje?.equipajeBodega) {
         equipajePayload.push({
-          id_detalle: detalle.idDetalle,
+          idDetalle: detalle.idDetalle,
           tipo: 'BODEGA',
-          peso_kg: 23,
-          descripcion_equipaje: 'Equipaje de bodega adicional',
+          pesoKg: 23,
+          descripcionEquipaje: 'Maleta de bodega',
         })
       }
     }
 
-    await pagarReservaApi(idReserva, {
-      cargo_servicio: CARGO_SERVICIO,
+    const payloadPago = {
+      cargoServicio: CARGO_SERVICIO,
       equipaje: equipajePayload,
+    }
+
+    logRequestReservaBackend({
+      endpoint: `/reservas/${idReserva}/pagar`,
+      method: 'PATCH',
+      payload: payloadPago,
     })
+
+    const pagoResp = await pagarReservaApi(idReserva, payloadPago)
+    logResponseReservaBackend({
+      endpoint: `/reservas/${idReserva}/pagar`,
+      method: 'PATCH',
+      response: pagoResp,
+    })
+
+    let progresoAerolinea = null
+    try {
+      progresoAerolinea = JSON.parse(localStorage.getItem(KEY_AEROLINEA_PROGRESO) || 'null')
+    } catch {
+      progresoAerolinea = null
+    }
 
     const payloadConfirmacion = {
       idReserva,
@@ -571,6 +640,7 @@ async function ejecutarCompraReal() {
       ivaGeneral: ivaGeneral.value,
       cargoServicio: CARGO_SERVICIO,
       totalPagado: totalPagar.value,
+      urlRetorno: progresoAerolinea?.urlRetorno || '',
       pasajeros: itemsPago.value.map((item) => ({
         nombre: item.nombre,
         documento: item.pasajero.numero_documento_pasajero,
@@ -583,6 +653,7 @@ async function ejecutarCompraReal() {
 
     sessionStorage.setItem(KEY_CONFIRMACION, JSON.stringify(payloadConfirmacion))
     guardarPortalReserva(payloadConfirmacion)
+    localStorage.removeItem(KEY_AEROLINEA_PROGRESO)
 
     idClienteRecienRegistrado.value = null
     estadoProceso.value = ''

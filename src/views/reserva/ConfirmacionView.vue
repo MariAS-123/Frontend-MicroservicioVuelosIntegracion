@@ -45,6 +45,15 @@ function boletoEmitido(index) {
   return `TK-${confirmacion.value?.numeroVuelo || 'AV1001'}-${sufijo}`
 }
 
+function volverDespuesConfirmacion() {
+  sessionStorage.removeItem(KEY_CONFIRMACION)
+  if (confirmacion.value?.urlRetorno) {
+    window.location.assign(confirmacion.value.urlRetorno)
+    return
+  }
+  router.push({ name: 'inicio' })
+}
+
 async function simularEnvioEmail() {
   if (enviandoEmail.value) return
   enviandoEmail.value = true
@@ -55,8 +64,7 @@ async function simularEnvioEmail() {
   emailEnviado.value = true
 
   setTimeout(() => {
-    sessionStorage.removeItem(KEY_CONFIRMACION)
-    router.push({ name: 'inicio' })
+    volverDespuesConfirmacion()
   }, 1200)
 }
 
@@ -245,9 +253,9 @@ onMounted(() => {
               <button
                 type="button"
                 class="mt-6 block w-full text-center text-lg font-medium text-navy transition-colors hover:text-blue-accent sm:text-xl"
-                @click="router.push({ name: 'inicio' })"
+                @click="volverDespuesConfirmacion"
               >
-                Volver al Inicio
+                {{ confirmacion.urlRetorno ? 'Volver a la aerolinea' : 'Volver al Inicio' }}
               </button>
             </div>
           </div>

@@ -127,7 +127,10 @@ async function handleLogin() {
         <div class="mt-8 border-t border-slate-200 pt-8 text-center">
           <p class="text-sm text-text-muted">
             ¿No tienes cuenta?
-            <RouterLink to="/registro" class="font-semibold text-navy hover:underline">
+            <RouterLink
+              :to="{ name: 'registro', query: route.query.redirect ? { redirect: route.query.redirect } : {} }"
+              class="font-semibold text-navy hover:underline"
+            >
               Regístrate aquí
             </RouterLink>
           </p>

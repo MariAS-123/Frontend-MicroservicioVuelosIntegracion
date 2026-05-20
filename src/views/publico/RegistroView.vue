@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, watch, onMounted } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRoute, useRouter } from 'vue-router'
 import { useAutenticacionStore } from '@/stores/autenticacion.store'
 import { useReservaStore } from '@/stores/reserva.store'
 import { registerClienteApi } from '@/api/autenticacion.api'
@@ -11,6 +11,7 @@ import SelectApp from '@/components/base/SelectApp.vue'
 import BotonApp from '@/components/base/BotonApp.vue'
 
 const router = useRouter()
+const route = useRoute()
 const auth = useAutenticacionStore()
 const reserva = useReservaStore()
 const catalogos = useCatalogosStore()
@@ -161,7 +162,10 @@ async function handleRegistro() {
     await registerClienteApi(payload)
     await auth.login({ username: payload.username, password: payload.password }, true)
 
-    if (reserva.tienePendiente) {
+    const redirect = route.query.redirect
+    if (redirect) {
+      router.push(redirect)
+    } else if (reserva.tienePendiente) {
       try {
         await router.push({ name: 'checkout-pago' })
       } catch {

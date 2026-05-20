@@ -39,6 +39,11 @@ const router = createRouter({
           component: () => import('@/views/publico/DetalleVueloView.vue'),
         },
         {
+          path: 'aerolinea',
+          name: 'checkout-aerolinea',
+          component: () => import('@/views/publico/AerolineaCheckoutView.vue'),
+        },
+        {
           path: 'passengers',
           name: 'datos-pasajeros',
           component: () => import('@/views/reserva/PasajerosView.vue'),
