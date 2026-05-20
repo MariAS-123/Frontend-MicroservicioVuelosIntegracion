@@ -9,7 +9,7 @@ const KEY_PROGRESO = 'aerolinea_progreso'
 const errorGeneral = ref('')
 
 function obtenerPrimero(...valores) {
-  return valores.find((valor) => valor !== undefined && valor !== null && String(valor).trim() !== '')
+  return valores.flat().find((valor) => valor !== undefined && valor !== null && String(valor).trim() !== '')
 }
 
 function parseJwtPayload(token) {
@@ -26,18 +26,44 @@ function parseJwtPayload(token) {
 
 function obtenerIdVueloDesdeToken(token) {
   const payload = parseJwtPayload(token)
+  const posibleCampoVuelo = buscarCampoVuelo(payload)
+
   return Number(
     obtenerPrimero(
       payload?.idVuelo,
       payload?.id_vuelo,
       payload?.IdVuelo,
+      payload?.ID_VUELO,
       payload?.vueloId,
       payload?.vuelo_id,
+      payload?.idVueloSeleccionado,
+      payload?.id_vuelo_seleccionado,
       payload?.flightId,
       payload?.idFlight,
+      payload?.id_flight,
       payload?.id_vuelo_reserva,
+      payload?.vuelo?.idVuelo,
+      payload?.vuelo?.id_vuelo,
+      posibleCampoVuelo,
     ) || 0,
   )
+}
+
+function buscarCampoVuelo(valor) {
+  if (!valor || typeof valor !== 'object') return null
+
+  for (const [clave, contenido] of Object.entries(valor)) {
+    if (/vuelo|flight/i.test(clave) && Number(contenido) > 0) {
+      return contenido
+    }
+
+    if (contenido && typeof contenido === 'object') {
+      const encontrado = buscarCampoVuelo(contenido)
+      if (Number(encontrado) > 0) return encontrado
+    }
+  }
+
+  return null
 }
 
 function leerPayload() {
@@ -84,6 +110,10 @@ onMounted(() => {
   const payload = leerPayload()
 
   if (!payload.idVuelo) {
+    console.warn('[aerolinea-redirect:sin-id-vuelo]', {
+      query: route.query,
+      tokenPayload: parseJwtPayload(payload.token),
+    })
     errorGeneral.value = 'No se recibio el id del vuelo seleccionado desde la aerolinea.'
     return
   }
