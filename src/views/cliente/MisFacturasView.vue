@@ -1,10 +1,14 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { getClienteFacturasApi } from '@/api/facturas.api'
-import { deepValue, extractItems, longDate, money } from '@/utils/portalCliente'
+import { getClienteFacturasApi, getFacturasApi } from '@/api/facturas.api'
+import { useAutenticacionStore } from '@/stores/autenticacion.store'
+import { useClienteStore } from '@/stores/cliente.store'
+import { deepValue, extractItems, longDate, money, resolveClienteId } from '@/utils/portalCliente'
 
 const router = useRouter()
+const auth = useAutenticacionStore()
+const cliente = useClienteStore()
 const cargando = ref(true)
 const error = ref('')
 const facturas = ref([])
@@ -40,13 +44,40 @@ function etiquetaEstado(estado) {
   return estado || 'Aprobada'
 }
 
+function parametrosCliente() {
+  const idCliente = resolveClienteId(auth, cliente)
+
+  return {
+    IdCliente: idCliente || undefined,
+    idCliente: idCliente || undefined,
+    id_cliente: idCliente || undefined,
+    Page: 1,
+    PageSize: 100,
+    page: 1,
+    page_size: 100,
+  }
+}
+
+async function cargarFacturasCliente() {
+  try {
+    const respuesta = await getClienteFacturasApi()
+    const items = extractItems(respuesta)
+    if (items.length) return items
+  } catch {
+    // Fallback para cuando el Bus no expone /portal/cliente/facturas.
+  }
+
+  const respuesta = await getFacturasApi(parametrosCliente())
+  return extractItems(respuesta)
+}
+
 async function cargarFacturas() {
   cargando.value = true
   error.value = ''
 
   try {
-    const respuesta = await getClienteFacturasApi()
-    facturas.value = extractItems(respuesta).map(normalizarFactura)
+    const items = await cargarFacturasCliente()
+    facturas.value = items.map(normalizarFactura)
   } catch (err) {
     error.value = err.response?.data?.message || 'No se pudieron cargar las facturas.'
     facturas.value = []

@@ -47,15 +47,13 @@ export function extractItems(responseLike) {
   return arrays[0] ?? []
 }
 
-export function resolveClienteId(auth) {
+export function resolveClienteId(auth, cliente = null) {
   const payload = parseJwtPayload(auth?.token || '')
-  const candidate = deepValue(auth?.usuario, [
-    'idCliente',
-    'id_cliente',
-    'clienteId',
-    'cliente_id',
-    'id',
-  ])
+  const keys = ['idCliente', 'id_cliente', 'clienteId', 'cliente_id', 'id']
+  const candidate =
+    deepValue(cliente?.perfil, keys) ||
+    deepValue(cliente, keys) ||
+    deepValue(auth?.usuario, keys)
 
   return Number(
     candidate ??

@@ -1,11 +1,11 @@
 <script setup>
 import { computed, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { getClienteReservasApi } from '@/api/reservas.api'
-import { getClienteBoletosApi } from '@/api/boletos.api'
+import { getClienteReservasApi, getReservasApi } from '@/api/reservas.api'
+import { getBoletosApi, getClienteBoletosApi } from '@/api/boletos.api'
 import { useAutenticacionStore } from '@/stores/autenticacion.store'
 import { useClienteStore } from '@/stores/cliente.store'
-import { deepValue, extractItems, leerPortalReservas, longDate, shortTime } from '@/utils/portalCliente'
+import { deepValue, extractItems, leerPortalReservas, longDate, resolveClienteId, shortTime } from '@/utils/portalCliente'
 
 const router = useRouter()
 const auth = useAutenticacionStore()
@@ -164,17 +164,57 @@ function fallbackDesdeBoletos(payload) {
   return Array.from(agrupadas.values())
 }
 
+function parametrosCliente() {
+  const idCliente = resolveClienteId(auth, cliente)
+
+  return {
+    IdCliente: idCliente || undefined,
+    idCliente: idCliente || undefined,
+    id_cliente: idCliente || undefined,
+    Page: 1,
+    PageSize: 100,
+    page: 1,
+    page_size: 100,
+  }
+}
+
+async function cargarReservasCliente() {
+  try {
+    const respuesta = await getClienteReservasApi()
+    const items = extractItems(respuesta)
+    if (items.length) return items
+  } catch {
+    // Si el endpoint de portal no existe o falla, usamos el endpoint general filtrado por cliente.
+  }
+
+  const respuesta = await getReservasApi(parametrosCliente())
+  return extractItems(respuesta)
+}
+
+async function cargarBoletosCliente() {
+  try {
+    const respuesta = await getClienteBoletosApi()
+    const items = extractItems(respuesta)
+    if (items.length) return items
+  } catch {
+    // Mismo fallback para instalaciones donde no existe /portal/cliente/boletos.
+  }
+
+  const respuesta = await getBoletosApi(parametrosCliente())
+  return extractItems(respuesta)
+}
+
 async function cargarReservas() {
   cargando.value = true
   error.value = ''
 
   try {
-    const respuesta = await getClienteReservasApi()
-    reservas.value = extractItems(respuesta).map(normalizarReserva)
+    const items = await cargarReservasCliente()
+    reservas.value = items.map(normalizarReserva)
   } catch (err) {
     try {
-      const boletosRespuesta = await getClienteBoletosApi()
-      reservas.value = fallbackDesdeBoletos(boletosRespuesta)
+      const boletos = await cargarBoletosCliente()
+      reservas.value = fallbackDesdeBoletos(boletos)
     } catch {
       reservas.value = []
     }

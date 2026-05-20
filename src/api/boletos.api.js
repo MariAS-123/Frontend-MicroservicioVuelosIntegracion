@@ -3,6 +3,7 @@ import apiClient from './axios'
 export const getBoletosApi = (params = {}) =>
   apiClient.get('/boletos', {
     params: {
+      ...params,
       idReserva: params.idReserva ?? params.id_reserva,
     },
   })
