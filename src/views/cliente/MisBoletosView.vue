@@ -166,7 +166,7 @@ async function cargarReservasCliente() {
     // Fallback para ambientes donde no existe /portal/cliente/reservas.
   }
 
-  const respuesta = await getReservasApi(parametrosCliente())
+  const respuesta = await getReservasApi(parametrosCliente(), { skipAuthRedirect: true })
   return extractItems(respuesta)
 }
 
@@ -179,7 +179,7 @@ async function cargarBoletosCliente() {
     // Fallback para ambientes donde no existe /portal/cliente/boletos.
   }
 
-  const respuesta = await getBoletosApi(parametrosCliente())
+  const respuesta = await getBoletosApi(parametrosCliente(), { skipAuthRedirect: true })
   return extractItems(respuesta)
 }
 

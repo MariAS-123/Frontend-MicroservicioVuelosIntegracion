@@ -28,12 +28,23 @@ function extraerRolDesdePayload(payload) {
   )
 }
 
+function normalizarRol(value) {
+  const raw = Array.isArray(value) ? value[0] : value
+  const rol = String(raw || '').trim().toUpperCase()
+
+  if (['CLIENTE', 'CUSTOMER', 'USUARIO', 'USER'].includes(rol)) return 'CLIENTE'
+  if (['ADMINISTRADOR', 'ADMIN'].includes(rol)) return 'ADMINISTRADOR'
+  if (['AEROLINEA', 'AEROLÍNEA', 'AIRLINE'].includes(rol)) return 'AEROLINEA'
+
+  return rol || null
+}
+
 export const useAutenticacionStore = defineStore('autenticacion', () => {
   const leer = (clave) => localStorage.getItem(clave) ?? sessionStorage.getItem(clave) ?? null
 
   const token = ref(leer('token'))
   const usuario = ref(JSON.parse(leer('usuario') || 'null'))
-  const rol = ref(leer('rol'))
+  const rol = ref(normalizarRol(leer('rol')))
 
   const estaAutenticado = computed(() => !!token.value)
   const esAdministrador = computed(() => rol.value === 'ADMINISTRADOR')
@@ -48,7 +59,7 @@ export const useAutenticacionStore = defineStore('autenticacion', () => {
 
     token.value = tokenRecibido
     usuario.value = data.data.usuario
-    rol.value = rolRespuesta ?? extraerRolDesdePayload(payload)
+    rol.value = normalizarRol(rolRespuesta ?? extraerRolDesdePayload(payload))
 
     const storage = recordar ? localStorage : sessionStorage
     storage.setItem('token', token.value)

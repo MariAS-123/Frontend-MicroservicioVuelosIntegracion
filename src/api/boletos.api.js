@@ -1,7 +1,8 @@
 import apiClient from './axios'
 
-export const getBoletosApi = (params = {}) =>
+export const getBoletosApi = (params = {}, config = {}) =>
   apiClient.get('/boletos', {
+    ...config,
     params: {
       ...params,
       idReserva: params.idReserva ?? params.id_reserva,

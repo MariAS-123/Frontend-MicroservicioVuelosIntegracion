@@ -187,7 +187,7 @@ async function cargarReservasCliente() {
     // Si el endpoint de portal no existe o falla, usamos el endpoint general filtrado por cliente.
   }
 
-  const respuesta = await getReservasApi(parametrosCliente())
+  const respuesta = await getReservasApi(parametrosCliente(), { skipAuthRedirect: true })
   return extractItems(respuesta)
 }
 
@@ -200,7 +200,7 @@ async function cargarBoletosCliente() {
     // Mismo fallback para instalaciones donde no existe /portal/cliente/boletos.
   }
 
-  const respuesta = await getBoletosApi(parametrosCliente())
+  const respuesta = await getBoletosApi(parametrosCliente(), { skipAuthRedirect: true })
   return extractItems(respuesta)
 }
 

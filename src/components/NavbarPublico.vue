@@ -13,8 +13,8 @@ const cerrar = () => (menuAbierto.value = false)
 
 async function irMiCuenta() {
   cerrar()
-  if (auth.esCliente) router.push('/cliente')
-  else router.push('/panel')
+  if (auth.esAdministrador || auth.esAerolinea) router.push('/panel')
+  else router.push('/cliente')
 }
 
 async function cerrarSesion() {

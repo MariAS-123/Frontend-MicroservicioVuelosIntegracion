@@ -87,10 +87,10 @@ apiClient.interceptors.response.use(
       }))
     }
 
-    if (status === 401) {
+    if (status === 401 && !error.config?.skipAuthRedirect) {
       limpiarSesion()
       window.location.href = '/login'
-    } else if (status === 403) {
+    } else if (status === 403 && !error.config?.skipAuthRedirect) {
       window.location.href = '/no-autorizado'
     }
 

@@ -1,7 +1,7 @@
 import apiClient from './axios'
 
-export const getReservasApi = (params = {}) =>
-  apiClient.get('/reservas', { params })
+export const getReservasApi = (params = {}, config = {}) =>
+  apiClient.get('/reservas', { ...config, params })
 
 export const getReservaApi = (idReserva) =>
   apiClient.get(`/reservas/${idReserva}`)

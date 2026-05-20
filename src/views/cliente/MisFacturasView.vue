@@ -67,7 +67,7 @@ async function cargarFacturasCliente() {
     // Fallback para cuando el Bus no expone /portal/cliente/facturas.
   }
 
-  const respuesta = await getFacturasApi(parametrosCliente())
+  const respuesta = await getFacturasApi(parametrosCliente(), { skipAuthRedirect: true })
   return extractItems(respuesta)
 }
 

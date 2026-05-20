@@ -1,7 +1,8 @@
 import apiClient from './axios'
 
-export const getFacturasApi = (params = {}) =>
+export const getFacturasApi = (params = {}, config = {}) =>
   apiClient.get('/facturas', {
+    ...config,
     params: {
       page: 1,
       page_size: 100,
