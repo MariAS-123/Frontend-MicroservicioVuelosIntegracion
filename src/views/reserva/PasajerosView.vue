@@ -121,7 +121,6 @@ function validarCedulaEcuador(valor) {
 
 function validarDocumento(tipo, valor) {
   const documento = String(valor || '').trim().toUpperCase()
-  const soloDigitos = documento.replace(/\D/g, '')
   if (!documento) return 'Ingresa el numero de documento.'
 
   if (tipo === 'CEDULA' && !validarCedulaEcuador(documento)) {
@@ -134,10 +133,6 @@ function validarDocumento(tipo, valor) {
 
   if (tipo === 'RUC' && !/^\d{13}$/.test(documento)) {
     return 'El RUC debe tener 13 digitos.'
-  }
-
-  if (tipo === 'CEDULA' && documento !== soloDigitos) {
-    return 'Ingrese una cedula valida.'
   }
 
   if (tipo === 'OTRO' && !/^[A-Z0-9-]{4,20}$/.test(documento)) {
@@ -298,7 +293,7 @@ onMounted(async () => {
                     placeholder="Ej. 1710034065"
                     class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-blue-accent focus:ring-4 focus:ring-blue-accent/10"
                   />
-                  <span class="mt-1.5 block text-xs text-slate-400">Cedula sin espacios ni guiones. Pasaporte: letras y numeros.</span>
+                  <span class="mt-1.5 block text-xs text-slate-400">Ejemplo cedula: 1723457898. Se validan 10 digitos.</span>
                   <span v-if="errores[`documento-${indice}`]" class="mt-2 block text-sm text-red-500">{{ errores[`documento-${indice}`] }}</span>
                 </label>
 
