@@ -127,6 +127,10 @@ const numeroTarjetaDigitos = computed(() =>
 )
 
 const numeroTarjetaValido = computed(() => numeroTarjetaDigitos.value.length === 16)
+const expiracionTarjetaValida = computed(() =>
+  validarExpiracionTarjeta(pagoSimuladoForm.value.expiracion),
+)
+const cvvValido = computed(() => /^\d{3,4}$/.test(String(pagoSimuladoForm.value.cvv || '').trim()))
 
 const itemsPago = computed(() =>
   pasajeros.value.map((pasajero, indice) => {
@@ -313,6 +317,15 @@ function handleExpiracionTarjetaInput(event) {
   }
 }
 
+function handleCvvInput(event) {
+  pagoSimuladoForm.value.cvv = String(event.target.value || '').replace(/\D/g, '').slice(0, 4)
+
+  if (cvvValido.value && erroresPagoSimulado.value.cvv) {
+    const { cvv, ...restoErrores } = erroresPagoSimulado.value
+    erroresPagoSimulado.value = restoErrores
+  }
+}
+
 function validarPagoSimulado() {
   const errores = {}
   const numero = numeroTarjetaDigitos.value
@@ -320,7 +333,8 @@ function validarPagoSimulado() {
   if (!pagoSimuladoForm.value.titular.trim()) errores.titular = 'Ingresa el nombre del titular.'
   if (!numero) errores.numeroTarjeta = 'Ingresa el numero de tarjeta.'
   else if (numero.length !== 16) errores.numeroTarjeta = 'Ingresa un numero de tarjeta de 16 digitos.'
-  if (!validarExpiracionTarjeta(pagoSimuladoForm.value.expiracion)) errores.expiracion = 'Usa formato MM/AA con fecha vigente.'
+  if (!pagoSimuladoForm.value.expiracion.trim()) errores.expiracion = 'Ingresa la fecha de expiracion.'
+  else if (!validarExpiracionTarjeta(pagoSimuladoForm.value.expiracion)) errores.expiracion = 'Ingresa una fecha vigente en formato MM/AA.'
   if (!/^\d{3,4}$/.test(pagoSimuladoForm.value.cvv.trim())) errores.cvv = 'El CVV debe tener 3 o 4 digitos.'
 
   erroresPagoSimulado.value = errores
@@ -1121,10 +1135,10 @@ onMounted(async () => {
           class="mt-8 flex min-h-[440px] flex-col items-center justify-center text-center"
         >
           <div class="relative h-40 w-40">
-            <div class="absolute inset-0 rounded-full border border-blue-accent/15"></div>
-            <div class="absolute inset-4 rounded-full border border-dashed border-gold/50"></div>
+            <div class="absolute inset-0 rounded-full border border-navy/15"></div>
+            <div class="absolute inset-4 rounded-full border border-dashed border-blue-accent/35"></div>
             <div class="absolute inset-0 animate-[spin_3.2s_linear_infinite]">
-              <div class="absolute left-1/2 top-0 flex h-12 w-12 -translate-x-1/2 items-center justify-center rounded-full bg-navy text-gold shadow-lg">
+              <div class="absolute left-1/2 top-0 flex h-12 w-12 -translate-x-1/2 items-center justify-center rounded-full bg-blue-accent text-white shadow-lg shadow-blue-accent/20">
                 <svg class="h-7 w-7" fill="currentColor" viewBox="0 0 64 64" aria-hidden="true">
                   <path d="M58.9 36.4 36.5 29.8V8.7C36.5 5.7 34.5 3 32 3s-4.5 2.7-4.5 5.7v21.1L5.1 36.4C3.9 36.8 3 37.9 3 39.2v3.2c0 1 .9 1.8 1.9 1.5L27.5 39v9.8l-7.3 5.3c-.7.5-1.1 1.3-1.1 2.2v2.2c0 .8.8 1.3 1.5 1L32 55.3l11.4 4.2c.7.3 1.5-.2 1.5-1v-2.2c0-.9-.4-1.7-1.1-2.2l-7.3-5.3V39l22.6 4.9c1 .2 1.9-.5 1.9-1.5v-3.2c0-1.3-.9-2.4-2.1-2.8Z" />
                 </svg>
@@ -1218,32 +1232,61 @@ onMounted(async () => {
 
           <label class="block">
             <span class="mb-2 block text-sm font-semibold text-navy">Expiracion</span>
-            <input
-              :value="pagoSimuladoForm.expiracion"
-              type="text"
-              inputmode="numeric"
-              autocomplete="cc-exp"
-              maxlength="5"
-              class="w-full rounded-xl border border-transparent bg-gray-100 px-4 py-3 text-sm text-text-main outline-none transition focus:border-blue-accent focus:ring-2 focus:ring-blue-accent/20"
-              :class="erroresPagoSimulado.expiracion && '!border-error focus:!ring-error/20'"
-              placeholder="MM/AA"
-              @input="handleExpiracionTarjetaInput"
-            />
+            <div class="relative">
+              <input
+                :value="pagoSimuladoForm.expiracion"
+                type="text"
+                inputmode="numeric"
+                autocomplete="cc-exp"
+                maxlength="5"
+                class="w-full rounded-xl border border-transparent bg-gray-100 px-4 py-3 pr-12 text-sm text-text-main outline-none transition focus:border-blue-accent focus:ring-2 focus:ring-blue-accent/20"
+                :class="[
+                  erroresPagoSimulado.expiracion && '!border-error focus:!ring-error/20',
+                  expiracionTarjetaValida && !erroresPagoSimulado.expiracion && '!border-emerald-400 focus:!border-emerald-500 focus:!ring-emerald-500/20',
+                ]"
+                placeholder="MM/AA"
+                @input="handleExpiracionTarjetaInput"
+              />
+              <span
+                v-if="expiracionTarjetaValida && !erroresPagoSimulado.expiracion"
+                class="pointer-events-none absolute right-4 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full bg-emerald-500 text-white"
+                aria-hidden="true"
+              >
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                </svg>
+              </span>
+            </div>
             <p v-if="erroresPagoSimulado.expiracion" class="mt-1.5 text-xs text-error">{{ erroresPagoSimulado.expiracion }}</p>
           </label>
 
           <label class="block">
             <span class="mb-2 block text-sm font-semibold text-navy">CVV</span>
-            <input
-              v-model="pagoSimuladoForm.cvv"
-              type="password"
-              inputmode="numeric"
-              autocomplete="cc-csc"
-              maxlength="4"
-              class="w-full rounded-xl border border-transparent bg-gray-100 px-4 py-3 text-sm text-text-main outline-none transition focus:border-blue-accent focus:ring-2 focus:ring-blue-accent/20"
-              :class="erroresPagoSimulado.cvv && '!border-error focus:!ring-error/20'"
-              placeholder="123"
-            />
+            <div class="relative">
+              <input
+                :value="pagoSimuladoForm.cvv"
+                type="password"
+                inputmode="numeric"
+                autocomplete="cc-csc"
+                maxlength="4"
+                class="w-full rounded-xl border border-transparent bg-gray-100 px-4 py-3 pr-12 text-sm text-text-main outline-none transition focus:border-blue-accent focus:ring-2 focus:ring-blue-accent/20"
+                :class="[
+                  erroresPagoSimulado.cvv && '!border-error focus:!ring-error/20',
+                  cvvValido && !erroresPagoSimulado.cvv && '!border-emerald-400 focus:!border-emerald-500 focus:!ring-emerald-500/20',
+                ]"
+                placeholder="123"
+                @input="handleCvvInput"
+              />
+              <span
+                v-if="cvvValido && !erroresPagoSimulado.cvv"
+                class="pointer-events-none absolute right-4 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full bg-emerald-500 text-white"
+                aria-hidden="true"
+              >
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                </svg>
+              </span>
+            </div>
             <p v-if="erroresPagoSimulado.cvv" class="mt-1.5 text-xs text-error">{{ erroresPagoSimulado.cvv }}</p>
           </label>
 

@@ -1,5 +1,5 @@
 <script setup>
-import { computed, onMounted, ref } from 'vue'
+import { computed, nextTick, onMounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import CheckoutStepper from '@/components/CheckoutStepper.vue'
 import { useCatalogosStore } from '@/stores/catalogos.store'
@@ -10,6 +10,8 @@ const catalogos = useCatalogosStore()
 const reserva = useReservaStore()
 
 const errores = ref({})
+const errorGeneral = ref('')
+const navegando = ref(false)
 const pasajeros = ref([])
 
 const vuelo = computed(() => reserva.vuelo)
@@ -142,6 +144,25 @@ function validarDocumento(tipo, valor) {
   return ''
 }
 
+function normalizarFechaNacimiento(valor) {
+  const texto = String(valor || '').trim()
+  if (/^\d{4}-\d{2}-\d{2}$/.test(texto)) return texto
+
+  const match = texto.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/)
+  if (!match) return texto
+
+  const dia = match[1].padStart(2, '0')
+  const mes = match[2].padStart(2, '0')
+  return `${match[3]}-${mes}-${dia}`
+}
+
+async function enfocarPrimerError() {
+  await nextTick()
+  const primero = document.querySelector('[data-error-activo="true"]')
+  primero?.scrollIntoView({ behavior: 'smooth', block: 'center' })
+  primero?.querySelector('input, select, textarea')?.focus?.()
+}
+
 function validar() {
   const nuevosErrores = {}
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -149,6 +170,8 @@ function validar() {
   hoy.setHours(0, 0, 0, 0)
 
   pasajeros.value.forEach((pasajero, indice) => {
+    pasajero.fecha_nacimiento_pasajero = normalizarFechaNacimiento(pasajero.fecha_nacimiento_pasajero)
+
     if (!pasajero.nombre_pasajero.trim()) nuevosErrores[`nombre-${indice}`] = 'Ingresa el nombre.'
     if (!pasajero.apellido_pasajero.trim()) nuevosErrores[`apellido-${indice}`] = 'Ingresa el apellido.'
     if (!pasajero.tipo_documento_pasajero) nuevosErrores[`tipo-documento-${indice}`] = 'Selecciona el tipo de documento.'
@@ -173,13 +196,27 @@ function validar() {
   })
 
   errores.value = nuevosErrores
-  return Object.keys(nuevosErrores).length === 0
+  const valido = Object.keys(nuevosErrores).length === 0
+  errorGeneral.value = valido ? '' : 'Revisa los datos del pasajero antes de continuar.'
+  return valido
 }
 
-function continuarAsientos() {
-  if (!validar()) return
-  sincronizarStore()
-  router.push({ name: 'seleccion-asientos' })
+async function continuarAsientos() {
+  if (navegando.value) return
+  if (!validar()) {
+    await enfocarPrimerError()
+    return
+  }
+
+  navegando.value = true
+  try {
+    sincronizarStore()
+    await router.push({ name: 'seleccion-asientos' })
+  } catch {
+    errorGeneral.value = 'No se pudo continuar a la seleccion de asientos. Intenta nuevamente.'
+  } finally {
+    navegando.value = false
+  }
 }
 
 onMounted(async () => {
@@ -218,6 +255,13 @@ onMounted(async () => {
           </button>
         </div>
 
+        <div
+          v-if="errorGeneral"
+          class="mt-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700"
+        >
+          {{ errorGeneral }}
+        </div>
+
         <div class="mt-8 grid gap-8 lg:grid-cols-[1.4fr_0.8fr]">
           <div class="space-y-6">
             <article
@@ -248,7 +292,7 @@ onMounted(async () => {
               </div>
 
               <div class="mt-8 grid gap-6 md:grid-cols-2">
-                <label class="block">
+                <label class="block" :data-error-activo="!!errores[`nombre-${indice}`]">
                   <span class="mb-2 block font-medium text-navy">Nombre</span>
                   <input
                     v-model="pasajero.nombre_pasajero"
@@ -259,7 +303,7 @@ onMounted(async () => {
                   <span v-if="errores[`nombre-${indice}`]" class="mt-2 block text-sm text-red-500">{{ errores[`nombre-${indice}`] }}</span>
                 </label>
 
-                <label class="block">
+                <label class="block" :data-error-activo="!!errores[`apellido-${indice}`]">
                   <span class="mb-2 block font-medium text-navy">Apellido</span>
                   <input
                     v-model="pasajero.apellido_pasajero"
@@ -270,7 +314,7 @@ onMounted(async () => {
                   <span v-if="errores[`apellido-${indice}`]" class="mt-2 block text-sm text-red-500">{{ errores[`apellido-${indice}`] }}</span>
                 </label>
 
-                <label class="block">
+                <label class="block" :data-error-activo="!!errores[`tipo-documento-${indice}`]">
                   <span class="mb-2 block font-medium text-navy">Tipo de Documento</span>
                   <select
                     v-model="pasajero.tipo_documento_pasajero"
@@ -284,7 +328,7 @@ onMounted(async () => {
                   <span v-if="errores[`tipo-documento-${indice}`]" class="mt-2 block text-sm text-red-500">{{ errores[`tipo-documento-${indice}`] }}</span>
                 </label>
 
-                <label class="block">
+                <label class="block" :data-error-activo="!!errores[`documento-${indice}`]">
                   <span class="mb-2 block font-medium text-navy">Numero de Documento</span>
                   <input
                     v-model="pasajero.numero_documento_pasajero"
@@ -297,7 +341,7 @@ onMounted(async () => {
                   <span v-if="errores[`documento-${indice}`]" class="mt-2 block text-sm text-red-500">{{ errores[`documento-${indice}`] }}</span>
                 </label>
 
-                <label class="block">
+                <label class="block" :data-error-activo="!!errores[`fecha-${indice}`]">
                   <span class="mb-2 block font-medium text-navy">Fecha de Nacimiento</span>
                   <input
                     v-model="pasajero.fecha_nacimiento_pasajero"
@@ -308,7 +352,7 @@ onMounted(async () => {
                   <span v-if="errores[`fecha-${indice}`]" class="mt-2 block text-sm text-red-500">{{ errores[`fecha-${indice}`] }}</span>
                 </label>
 
-                <label class="block">
+                <label class="block" :data-error-activo="!!errores[`nacionalidad-${indice}`]">
                   <span class="mb-2 block font-medium text-navy">Nacionalidad</span>
                   <select
                     v-model="pasajero.id_pais_nacionalidad"
@@ -322,7 +366,7 @@ onMounted(async () => {
                   <span v-if="errores[`nacionalidad-${indice}`]" class="mt-2 block text-sm text-red-500">{{ errores[`nacionalidad-${indice}`] }}</span>
                 </label>
 
-                <label class="block">
+                <label class="block" :data-error-activo="!!errores[`email-${indice}`]">
                   <span class="mb-2 block font-medium text-navy">Email de Contacto</span>
                   <input
                     v-model="pasajero.email_contacto_pasajero"
@@ -333,7 +377,7 @@ onMounted(async () => {
                   <span v-if="errores[`email-${indice}`]" class="mt-2 block text-sm text-red-500">{{ errores[`email-${indice}`] }}</span>
                 </label>
 
-                <label class="block">
+                <label class="block" :data-error-activo="!!errores[`telefono-${indice}`]">
                   <span class="mb-2 block font-medium text-navy">Telefono de Contacto</span>
                   <input
                     v-model="pasajero.telefono_contacto_pasajero"
@@ -344,7 +388,7 @@ onMounted(async () => {
                   <span v-if="errores[`telefono-${indice}`]" class="mt-2 block text-sm text-red-500">{{ errores[`telefono-${indice}`] }}</span>
                 </label>
 
-                <label class="block md:col-span-2">
+                <label class="block md:col-span-2" :data-error-activo="!!errores[`genero-${indice}`]">
                   <span class="mb-2 block font-medium text-navy">Genero</span>
                   <select
                     v-model="pasajero.genero_pasajero"
@@ -410,10 +454,11 @@ onMounted(async () => {
 
               <button
                 type="button"
-                class="mt-8 w-full rounded-2xl bg-gold px-6 py-4 font-semibold text-navy transition-colors hover:bg-gold-light"
+                class="mt-8 w-full rounded-2xl bg-gold px-6 py-4 font-semibold text-navy transition-colors hover:bg-gold-light disabled:cursor-not-allowed disabled:bg-gold/60"
+                :disabled="navegando"
                 @click="continuarAsientos"
               >
-                Continuar a Asientos
+                {{ navegando ? 'Continuando...' : 'Continuar a Asientos' }}
               </button>
 
               <button
