@@ -235,26 +235,7 @@ function logResumenPagoUi() {
 
 function validarCedulaEcuador(valor) {
   const cedula = String(valor || '').replace(/\D/g, '')
-  if (!/^\d{10}$/.test(cedula)) return false
-
-  const provincia = Number(cedula.slice(0, 2))
-  const tercerDigito = Number(cedula[2])
-  if (provincia < 1 || provincia > 24 || tercerDigito > 5) return false
-
-  const total = cedula
-    .slice(0, 9)
-    .split('')
-    .reduce((acc, digito, index) => {
-      let valorDigito = Number(digito)
-      if (index % 2 === 0) {
-        valorDigito *= 2
-        if (valorDigito > 9) valorDigito -= 9
-      }
-      return acc + valorDigito
-    }, 0)
-
-  const verificador = total % 10 === 0 ? 0 : 10 - (total % 10)
-  return verificador === Number(cedula[9])
+  return /^\d{10}$/.test(cedula)
 }
 
 function validarDocumentoIdentidad(tipo, valor) {
@@ -262,7 +243,7 @@ function validarDocumentoIdentidad(tipo, valor) {
   if (!documento) return 'Requerido.'
 
   if (tipo === 'CEDULA' && !validarCedulaEcuador(documento)) {
-    return 'Ingresa una cedula ecuatoriana valida de 10 digitos.'
+    return 'Ingrese una cedula valida.'
   }
 
   if (tipo === 'PASAPORTE' && !/^[A-Z0-9]{6,12}$/.test(documento)) {

@@ -116,34 +116,16 @@ function sincronizarStore() {
 
 function validarCedulaEcuador(valor) {
   const cedula = String(valor || '').replace(/\D/g, '')
-  if (!/^\d{10}$/.test(cedula)) return false
-
-  const provincia = Number(cedula.slice(0, 2))
-  const tercerDigito = Number(cedula[2])
-  if (provincia < 1 || provincia > 24 || tercerDigito > 5) return false
-
-  const total = cedula
-    .slice(0, 9)
-    .split('')
-    .reduce((acc, digito, index) => {
-      let valorDigito = Number(digito)
-      if (index % 2 === 0) {
-        valorDigito *= 2
-        if (valorDigito > 9) valorDigito -= 9
-      }
-      return acc + valorDigito
-    }, 0)
-
-  const verificador = total % 10 === 0 ? 0 : 10 - (total % 10)
-  return verificador === Number(cedula[9])
+  return /^\d{10}$/.test(cedula)
 }
 
 function validarDocumento(tipo, valor) {
   const documento = String(valor || '').trim().toUpperCase()
+  const soloDigitos = documento.replace(/\D/g, '')
   if (!documento) return 'Ingresa el numero de documento.'
 
   if (tipo === 'CEDULA' && !validarCedulaEcuador(documento)) {
-    return 'Ingresa una cedula ecuatoriana valida de 10 digitos.'
+    return 'Ingrese una cedula valida.'
   }
 
   if (tipo === 'PASAPORTE' && !/^[A-Z0-9]{6,12}$/.test(documento)) {
@@ -152,6 +134,10 @@ function validarDocumento(tipo, valor) {
 
   if (tipo === 'RUC' && !/^\d{13}$/.test(documento)) {
     return 'El RUC debe tener 13 digitos.'
+  }
+
+  if (tipo === 'CEDULA' && documento !== soloDigitos) {
+    return 'Ingrese una cedula valida.'
   }
 
   if (tipo === 'OTRO' && !/^[A-Z0-9-]{4,20}$/.test(documento)) {
@@ -272,6 +258,7 @@ onMounted(async () => {
                   <input
                     v-model="pasajero.nombre_pasajero"
                     type="text"
+                    placeholder="Ej. Gabriela"
                     class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-blue-accent focus:ring-4 focus:ring-blue-accent/10"
                   />
                   <span v-if="errores[`nombre-${indice}`]" class="mt-2 block text-sm text-red-500">{{ errores[`nombre-${indice}`] }}</span>
@@ -282,6 +269,7 @@ onMounted(async () => {
                   <input
                     v-model="pasajero.apellido_pasajero"
                     type="text"
+                    placeholder="Ej. Aguilar"
                     class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-blue-accent focus:ring-4 focus:ring-blue-accent/10"
                   />
                   <span v-if="errores[`apellido-${indice}`]" class="mt-2 block text-sm text-red-500">{{ errores[`apellido-${indice}`] }}</span>
@@ -306,8 +294,11 @@ onMounted(async () => {
                   <input
                     v-model="pasajero.numero_documento_pasajero"
                     type="text"
+                    inputmode="text"
+                    placeholder="Ej. 1710034065"
                     class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-blue-accent focus:ring-4 focus:ring-blue-accent/10"
                   />
+                  <span class="mt-1.5 block text-xs text-slate-400">Cedula sin espacios ni guiones. Pasaporte: letras y numeros.</span>
                   <span v-if="errores[`documento-${indice}`]" class="mt-2 block text-sm text-red-500">{{ errores[`documento-${indice}`] }}</span>
                 </label>
 
@@ -341,6 +332,7 @@ onMounted(async () => {
                   <input
                     v-model="pasajero.email_contacto_pasajero"
                     type="email"
+                    placeholder="Ej. nombre@email.com"
                     class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-blue-accent focus:ring-4 focus:ring-blue-accent/10"
                   />
                   <span v-if="errores[`email-${indice}`]" class="mt-2 block text-sm text-red-500">{{ errores[`email-${indice}`] }}</span>
@@ -351,6 +343,7 @@ onMounted(async () => {
                   <input
                     v-model="pasajero.telefono_contacto_pasajero"
                     type="text"
+                    placeholder="Ej. 0987654321"
                     class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 outline-none transition focus:border-blue-accent focus:ring-4 focus:ring-blue-accent/10"
                   />
                   <span v-if="errores[`telefono-${indice}`]" class="mt-2 block text-sm text-red-500">{{ errores[`telefono-${indice}`] }}</span>
