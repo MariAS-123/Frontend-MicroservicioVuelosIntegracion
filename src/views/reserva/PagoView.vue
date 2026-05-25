@@ -807,15 +807,19 @@ async function confirmarPagoSimulado() {
   estadoPagoSimulado.value = 'processing'
 
   try {
-    estadoProceso.value = 'Procesando pago simulado...'
+    estadoProceso.value = ''
     await new Promise((resolve) => setTimeout(resolve, 1200))
     estadoPagoSimulado.value = 'approved'
-    estadoProceso.value = ''
     await new Promise((resolve) => setTimeout(resolve, 850))
 
-    mostrarModalPagoSimulado.value = false
+    estadoPagoSimulado.value = 'confirming'
     procesandoPago.value = true
     await ejecutarCompraReal()
+
+    if (errorPago.value) {
+      mostrarModalPagoSimulado.value = false
+      estadoPagoSimulado.value = 'idle'
+    }
   } finally {
     procesandoPagoSimulado.value = false
     procesandoPago.value = false
@@ -1113,13 +1117,13 @@ onMounted(async () => {
         </div>
 
         <div
-          v-if="estadoPagoSimulado === 'processing'"
+          v-if="estadoPagoSimulado === 'processing' || estadoPagoSimulado === 'confirming'"
           class="mt-8 flex min-h-[440px] flex-col items-center justify-center text-center"
         >
           <div class="relative h-40 w-40">
             <div class="absolute inset-0 rounded-full border border-blue-accent/15"></div>
             <div class="absolute inset-4 rounded-full border border-dashed border-gold/50"></div>
-            <div class="absolute inset-0 animate-spin">
+            <div class="absolute inset-0 animate-[spin_3.2s_linear_infinite]">
               <div class="absolute left-1/2 top-0 flex h-12 w-12 -translate-x-1/2 items-center justify-center rounded-full bg-navy text-gold shadow-lg">
                 <svg class="h-6 w-6 rotate-45" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 16l20-5-8 8-2-5.5L6 11l-4-1 20-5-5 20-3.5-7L2 16Z" />
@@ -1128,8 +1132,12 @@ onMounted(async () => {
             </div>
             <div class="absolute inset-12 rounded-full bg-slate-50 shadow-inner"></div>
           </div>
-          <h3 class="mt-6 text-2xl font-bold text-navy">Procesando pago</h3>
-          <p class="mt-2 max-w-sm text-sm text-text-muted">Validando tu transaccion de forma segura...</p>
+          <h3 class="mt-6 text-2xl font-bold text-navy">
+            {{ estadoPagoSimulado === 'confirming' ? 'Confirmando reserva' : 'Procesando pago' }}
+          </h3>
+          <p class="mt-2 max-w-sm text-sm text-text-muted">
+            {{ estadoPagoSimulado === 'confirming' ? 'Estamos generando tu reserva y boleto.' : 'Validando tu transaccion de forma segura...' }}
+          </p>
           <p class="mt-5 rounded-2xl bg-slate-50 px-5 py-3 text-lg font-semibold text-navy">{{ moneda(totalPagar) }}</p>
         </div>
 
