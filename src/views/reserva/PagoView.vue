@@ -27,10 +27,13 @@ const KEY_AEROLINEA_PROGRESO = 'aerolinea_progreso'
 const API_BASE_URL = (import.meta.env.VITE_API_URL || 'https://middlewaremicroserviciovuelos-bpf7bsgqh8g2cea5.eastus-01.azurewebsites.net/api/v1').replace(/\/$/, '')
 
 const mostrarModalAuth = ref(false)
+const mostrarModalPagoSimulado = ref(false)
 const tabAuth = ref('login')
 const errorPago = ref('')
 const errorAuth = ref('')
+const errorPagoSimulado = ref('')
 const procesandoPago = ref(false)
+const procesandoPagoSimulado = ref(false)
 const cargandoCiudades = ref(false)
 const estadoProceso = ref('')
 const ciudades = ref([])
@@ -60,6 +63,15 @@ const registerForm = ref({
 })
 
 const erroresRegistro = ref({})
+const erroresPagoSimulado = ref({})
+
+const pagoSimuladoForm = ref({
+  titular: '',
+  numeroTarjeta: '',
+  expiracion: '',
+  cvv: '',
+  tipo: 'CREDITO',
+})
 
 const vuelo = computed(() => reserva.vuelo)
 const pasajeros = computed(() => reserva.pasajeros || [])
@@ -170,6 +182,11 @@ function limpiarModal() {
   erroresRegistro.value = {}
 }
 
+function limpiarPagoSimulado() {
+  errorPagoSimulado.value = ''
+  erroresPagoSimulado.value = {}
+}
+
 function persistirPasajeroBackend(indice, idPasajero) {
   const actualizados = pasajeros.value.map((pasajero, idx) =>
     idx === indice
@@ -214,6 +231,108 @@ function logResumenPagoUi() {
     cargoServicio: CARGO_SERVICIO,
     totalPagado: totalPagar.value,
   })
+}
+
+function validarCedulaEcuador(valor) {
+  const cedula = String(valor || '').replace(/\D/g, '')
+  if (!/^\d{10}$/.test(cedula)) return false
+
+  const provincia = Number(cedula.slice(0, 2))
+  const tercerDigito = Number(cedula[2])
+  if (provincia < 1 || provincia > 24 || tercerDigito > 5) return false
+
+  const total = cedula
+    .slice(0, 9)
+    .split('')
+    .reduce((acc, digito, index) => {
+      let valorDigito = Number(digito)
+      if (index % 2 === 0) {
+        valorDigito *= 2
+        if (valorDigito > 9) valorDigito -= 9
+      }
+      return acc + valorDigito
+    }, 0)
+
+  const verificador = total % 10 === 0 ? 0 : 10 - (total % 10)
+  return verificador === Number(cedula[9])
+}
+
+function validarDocumentoIdentidad(tipo, valor) {
+  const documento = String(valor || '').trim().toUpperCase()
+  if (!documento) return 'Requerido.'
+
+  if (tipo === 'CEDULA' && !validarCedulaEcuador(documento)) {
+    return 'Ingresa una cedula ecuatoriana valida de 10 digitos.'
+  }
+
+  if (tipo === 'PASAPORTE' && !/^[A-Z0-9]{6,12}$/.test(documento)) {
+    return 'El pasaporte debe tener entre 6 y 12 caracteres alfanumericos.'
+  }
+
+  if (tipo === 'RUC' && !/^\d{13}$/.test(documento)) {
+    return 'El RUC debe tener 13 digitos.'
+  }
+
+  if (tipo === 'OTRO' && !/^[A-Z0-9-]{4,20}$/.test(documento)) {
+    return 'Usa entre 4 y 20 letras, numeros o guiones.'
+  }
+
+  return ''
+}
+
+function validarLuhn(numero) {
+  const digitos = String(numero || '').replace(/\D/g, '')
+  let suma = 0
+  let duplicar = false
+
+  for (let i = digitos.length - 1; i >= 0; i -= 1) {
+    let valor = Number(digitos[i])
+    if (duplicar) {
+      valor *= 2
+      if (valor > 9) valor -= 9
+    }
+    suma += valor
+    duplicar = !duplicar
+  }
+
+  return digitos.length >= 13 && suma % 10 === 0
+}
+
+function validarExpiracionTarjeta(valor) {
+  const match = String(valor || '').trim().match(/^(\d{2})\/(\d{2})$/)
+  if (!match) return false
+
+  const mes = Number(match[1])
+  const anio = 2000 + Number(match[2])
+  if (mes < 1 || mes > 12) return false
+
+  const finMes = new Date(anio, mes, 0, 23, 59, 59)
+  return finMes >= new Date()
+}
+
+function validarPagoSimulado() {
+  const errores = {}
+  const numero = pagoSimuladoForm.value.numeroTarjeta.replace(/\D/g, '')
+
+  if (!pagoSimuladoForm.value.titular.trim()) errores.titular = 'Ingresa el nombre del titular.'
+  if (!numero) errores.numeroTarjeta = 'Ingresa el numero de tarjeta.'
+  else if (numero.length !== 16 || !validarLuhn(numero)) errores.numeroTarjeta = 'Usa una tarjeta simulada valida de 16 digitos.'
+  if (!validarExpiracionTarjeta(pagoSimuladoForm.value.expiracion)) errores.expiracion = 'Usa formato MM/AA con fecha vigente.'
+  if (!/^\d{3,4}$/.test(pagoSimuladoForm.value.cvv.trim())) errores.cvv = 'El CVV debe tener 3 o 4 digitos.'
+
+  erroresPagoSimulado.value = errores
+  return !Object.keys(errores).length
+}
+
+function abrirPagoSimulado() {
+  limpiarPagoSimulado()
+  mostrarModalPagoSimulado.value = true
+}
+
+function cerrarPagoSimulado() {
+  if (procesandoPago.value || procesandoPagoSimulado.value) return
+  mostrarModalPagoSimulado.value = false
+  limpiarPagoSimulado()
 }
 
 function parseJwtPayload(token) {
@@ -354,11 +473,15 @@ function normalizarDetallesReserva(data) {
 function validarRegistro() {
   const e = {}
   const correo = registerForm.value.correo.trim()
+  const errorDocumento = validarDocumentoIdentidad(
+    registerForm.value.tipo_identificacion,
+    registerForm.value.numero_identificacion,
+  )
   const hoy = new Date()
   hoy.setHours(0, 0, 0, 0)
 
   if (!registerForm.value.tipo_identificacion) e.tipo_identificacion = 'Selecciona el tipo.'
-  if (!registerForm.value.numero_identificacion.trim()) e.numero_identificacion = 'Requerido.'
+  if (errorDocumento) e.numero_identificacion = errorDocumento
   if (!registerForm.value.nombres.trim()) e.nombres = 'Requerido.'
   if (!registerForm.value.apellidos.trim()) e.apellidos = 'Requerido.'
   if (!correo) e.correo = 'Requerido.'
@@ -409,11 +532,8 @@ async function autenticarYProcesar() {
 
   mostrarModalAuth.value = false
 
-  try {
-    await ejecutarCompraReal()
-  } finally {
-    procesandoPago.value = false
-  }
+  procesandoPago.value = false
+  abrirPagoSimulado()
 }
 
 async function registrarYProcesar() {
@@ -468,11 +588,8 @@ async function registrarYProcesar() {
 
   mostrarModalAuth.value = false
 
-  try {
-    await ejecutarCompraReal()
-  } finally {
-    procesandoPago.value = false
-  }
+  procesandoPago.value = false
+  abrirPagoSimulado()
 }
 
 async function ejecutarCompraReal() {
@@ -674,11 +791,33 @@ async function handlePagar() {
   }
 
   if (procesandoPago.value) return
-  procesandoPago.value = true
+  abrirPagoSimulado()
+}
+
+async function confirmarPagoSimulado() {
+  errorPago.value = ''
+  errorPagoSimulado.value = ''
+
+  if (procesandoPago.value || procesandoPagoSimulado.value || !validarPagoSimulado()) return
+
+  const numero = pagoSimuladoForm.value.numeroTarjeta.replace(/\D/g, '')
+  procesandoPagoSimulado.value = true
 
   try {
+    estadoProceso.value = 'Procesando pago simulado...'
+    await new Promise((resolve) => setTimeout(resolve, 1200))
+
+    if (numero === '4000000000000002') {
+      errorPagoSimulado.value = 'Pago rechazado por la pasarela simulada.'
+      estadoProceso.value = ''
+      return
+    }
+
+    mostrarModalPagoSimulado.value = false
+    procesandoPago.value = true
     await ejecutarCompraReal()
   } finally {
+    procesandoPagoSimulado.value = false
     procesandoPago.value = false
   }
 }
@@ -949,6 +1088,129 @@ onMounted(async () => {
           </button>
         </form>
       </div>
+    </div>
+
+    <div
+      v-if="mostrarModalPagoSimulado"
+      class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 px-4 py-8"
+      @click.self="cerrarPagoSimulado"
+    >
+      <form
+        class="w-full max-w-2xl rounded-[28px] bg-white p-6 shadow-2xl sm:p-8"
+        @submit.prevent="confirmarPagoSimulado"
+      >
+        <div class="flex items-start justify-between gap-4">
+          <div>
+            <p class="text-sm font-semibold uppercase tracking-[0.24em] text-gold-dark">Pago seguro</p>
+            <h2 class="mt-2 text-2xl font-bold text-navy">Pasarela simulada</h2>
+            <p class="mt-2 text-sm text-text-muted">
+              Estos datos no se guardan ni se envian al backend. Solo validan la simulacion antes de crear la reserva.
+            </p>
+          </div>
+          <button type="button" class="rounded-xl p-2 text-slate-500 hover:bg-slate-100" @click="cerrarPagoSimulado">
+            x
+          </button>
+        </div>
+
+        <div v-if="errorPagoSimulado" class="mt-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
+          {{ errorPagoSimulado }}
+        </div>
+
+        <div class="mt-6 rounded-2xl bg-slate-50 px-5 py-5">
+          <div class="flex items-center justify-between gap-4">
+            <div>
+              <p class="text-sm text-text-muted">Total a pagar</p>
+              <p class="mt-1 text-3xl font-bold text-navy">{{ moneda(totalPagar) }}</p>
+            </div>
+            <div class="text-right text-sm text-text-muted">
+              <p>{{ itemsPago.length }} pasajero{{ itemsPago.length === 1 ? '' : 's' }}</p>
+              <p>IVA incluido</p>
+            </div>
+          </div>
+        </div>
+
+        <div class="mt-6 grid gap-4 sm:grid-cols-2">
+          <label class="block sm:col-span-2">
+            <span class="mb-2 block text-sm font-semibold text-navy">Titular de la tarjeta</span>
+            <input
+              v-model="pagoSimuladoForm.titular"
+              type="text"
+              autocomplete="cc-name"
+              class="w-full rounded-xl border border-transparent bg-gray-100 px-4 py-3 text-sm text-text-main outline-none transition focus:border-blue-accent focus:ring-2 focus:ring-blue-accent/20"
+              :class="erroresPagoSimulado.titular && '!border-error focus:!ring-error/20'"
+              placeholder="Nombre Apellido"
+            />
+            <p v-if="erroresPagoSimulado.titular" class="mt-1.5 text-xs text-error">{{ erroresPagoSimulado.titular }}</p>
+          </label>
+
+          <label class="block sm:col-span-2">
+            <span class="mb-2 block text-sm font-semibold text-navy">Numero de tarjeta</span>
+            <input
+              v-model="pagoSimuladoForm.numeroTarjeta"
+              type="text"
+              inputmode="numeric"
+              autocomplete="cc-number"
+              maxlength="19"
+              class="w-full rounded-xl border border-transparent bg-gray-100 px-4 py-3 text-sm text-text-main outline-none transition focus:border-blue-accent focus:ring-2 focus:ring-blue-accent/20"
+              :class="erroresPagoSimulado.numeroTarjeta && '!border-error focus:!ring-error/20'"
+              placeholder="4111 1111 1111 1111"
+            />
+            <p v-if="erroresPagoSimulado.numeroTarjeta" class="mt-1.5 text-xs text-error">{{ erroresPagoSimulado.numeroTarjeta }}</p>
+          </label>
+
+          <label class="block">
+            <span class="mb-2 block text-sm font-semibold text-navy">Expiracion</span>
+            <input
+              v-model="pagoSimuladoForm.expiracion"
+              type="text"
+              autocomplete="cc-exp"
+              maxlength="5"
+              class="w-full rounded-xl border border-transparent bg-gray-100 px-4 py-3 text-sm text-text-main outline-none transition focus:border-blue-accent focus:ring-2 focus:ring-blue-accent/20"
+              :class="erroresPagoSimulado.expiracion && '!border-error focus:!ring-error/20'"
+              placeholder="MM/AA"
+            />
+            <p v-if="erroresPagoSimulado.expiracion" class="mt-1.5 text-xs text-error">{{ erroresPagoSimulado.expiracion }}</p>
+          </label>
+
+          <label class="block">
+            <span class="mb-2 block text-sm font-semibold text-navy">CVV</span>
+            <input
+              v-model="pagoSimuladoForm.cvv"
+              type="password"
+              inputmode="numeric"
+              autocomplete="cc-csc"
+              maxlength="4"
+              class="w-full rounded-xl border border-transparent bg-gray-100 px-4 py-3 text-sm text-text-main outline-none transition focus:border-blue-accent focus:ring-2 focus:ring-blue-accent/20"
+              :class="erroresPagoSimulado.cvv && '!border-error focus:!ring-error/20'"
+              placeholder="123"
+            />
+            <p v-if="erroresPagoSimulado.cvv" class="mt-1.5 text-xs text-error">{{ erroresPagoSimulado.cvv }}</p>
+          </label>
+
+          <label class="block sm:col-span-2">
+            <span class="mb-2 block text-sm font-semibold text-navy">Tipo de pago</span>
+            <select
+              v-model="pagoSimuladoForm.tipo"
+              class="w-full rounded-xl border border-transparent bg-gray-100 px-4 py-3 text-sm text-text-main outline-none transition focus:border-blue-accent focus:ring-2 focus:ring-blue-accent/20"
+            >
+              <option value="CREDITO">Credito</option>
+              <option value="DEBITO">Debito</option>
+            </select>
+          </label>
+        </div>
+
+        <div class="mt-6 rounded-2xl bg-blue-50 px-4 py-3 text-sm text-blue-accent">
+          Tarjeta aprobada de prueba: 4111 1111 1111 1111. Tarjeta rechazada: 4000 0000 0000 0002.
+        </div>
+
+        <button
+          type="submit"
+          class="mt-6 w-full rounded-2xl bg-gold px-6 py-4 font-semibold text-navy transition-colors hover:bg-gold-light disabled:cursor-not-allowed disabled:bg-gold/50"
+          :disabled="procesandoPago || procesandoPagoSimulado"
+        >
+          {{ procesandoPagoSimulado || procesandoPago ? 'Procesando...' : 'Procesar pago simulado' }}
+        </button>
+      </form>
     </div>
   </div>
 </template>

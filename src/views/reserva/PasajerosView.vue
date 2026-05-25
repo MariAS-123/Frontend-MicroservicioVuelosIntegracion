@@ -114,6 +114,53 @@ function sincronizarStore() {
   )
 }
 
+function validarCedulaEcuador(valor) {
+  const cedula = String(valor || '').replace(/\D/g, '')
+  if (!/^\d{10}$/.test(cedula)) return false
+
+  const provincia = Number(cedula.slice(0, 2))
+  const tercerDigito = Number(cedula[2])
+  if (provincia < 1 || provincia > 24 || tercerDigito > 5) return false
+
+  const total = cedula
+    .slice(0, 9)
+    .split('')
+    .reduce((acc, digito, index) => {
+      let valorDigito = Number(digito)
+      if (index % 2 === 0) {
+        valorDigito *= 2
+        if (valorDigito > 9) valorDigito -= 9
+      }
+      return acc + valorDigito
+    }, 0)
+
+  const verificador = total % 10 === 0 ? 0 : 10 - (total % 10)
+  return verificador === Number(cedula[9])
+}
+
+function validarDocumento(tipo, valor) {
+  const documento = String(valor || '').trim().toUpperCase()
+  if (!documento) return 'Ingresa el numero de documento.'
+
+  if (tipo === 'CEDULA' && !validarCedulaEcuador(documento)) {
+    return 'Ingresa una cedula ecuatoriana valida de 10 digitos.'
+  }
+
+  if (tipo === 'PASAPORTE' && !/^[A-Z0-9]{6,12}$/.test(documento)) {
+    return 'El pasaporte debe tener entre 6 y 12 caracteres alfanumericos.'
+  }
+
+  if (tipo === 'RUC' && !/^\d{13}$/.test(documento)) {
+    return 'El RUC debe tener 13 digitos.'
+  }
+
+  if (tipo === 'OTRO' && !/^[A-Z0-9-]{4,20}$/.test(documento)) {
+    return 'El documento debe tener entre 4 y 20 caracteres validos.'
+  }
+
+  return ''
+}
+
 function validar() {
   const nuevosErrores = {}
   const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
@@ -124,7 +171,8 @@ function validar() {
     if (!pasajero.nombre_pasajero.trim()) nuevosErrores[`nombre-${indice}`] = 'Ingresa el nombre.'
     if (!pasajero.apellido_pasajero.trim()) nuevosErrores[`apellido-${indice}`] = 'Ingresa el apellido.'
     if (!pasajero.tipo_documento_pasajero) nuevosErrores[`tipo-documento-${indice}`] = 'Selecciona el tipo de documento.'
-    if (!pasajero.numero_documento_pasajero.trim()) nuevosErrores[`documento-${indice}`] = 'Ingresa el numero de documento.'
+    const errorDocumento = validarDocumento(pasajero.tipo_documento_pasajero, pasajero.numero_documento_pasajero)
+    if (errorDocumento) nuevosErrores[`documento-${indice}`] = errorDocumento
     if (!pasajero.fecha_nacimiento_pasajero) {
       nuevosErrores[`fecha-${indice}`] = 'Selecciona la fecha de nacimiento.'
     } else {
