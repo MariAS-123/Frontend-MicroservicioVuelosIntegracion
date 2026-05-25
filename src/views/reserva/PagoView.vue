@@ -121,6 +121,12 @@ const subtotalGeneral = computed(() => subtotalVuelo.value + totalBodega.value)
 const ivaGeneral = computed(() => Number((subtotalGeneral.value * IVA).toFixed(2)))
 const totalPagar = computed(() => Number((subtotalGeneral.value + ivaGeneral.value + CARGO_SERVICIO).toFixed(2)))
 
+const numeroTarjetaDigitos = computed(() =>
+  String(pagoSimuladoForm.value.numeroTarjeta || '').replace(/\D/g, ''),
+)
+
+const numeroTarjetaValido = computed(() => numeroTarjetaDigitos.value.length === 16)
+
 const itemsPago = computed(() =>
   pasajeros.value.map((pasajero, indice) => {
     const asiento = asientos.value[indice] || null
@@ -261,24 +267,6 @@ function validarDocumentoIdentidad(tipo, valor) {
   return ''
 }
 
-function validarLuhn(numero) {
-  const digitos = String(numero || '').replace(/\D/g, '')
-  let suma = 0
-  let duplicar = false
-
-  for (let i = digitos.length - 1; i >= 0; i -= 1) {
-    let valor = Number(digitos[i])
-    if (duplicar) {
-      valor *= 2
-      if (valor > 9) valor -= 9
-    }
-    suma += valor
-    duplicar = !duplicar
-  }
-
-  return digitos.length >= 13 && suma % 10 === 0
-}
-
 function validarExpiracionTarjeta(valor) {
   const match = String(valor || '').trim().match(/^(\d{2})\/(\d{2})$/)
   if (!match) return false
@@ -291,13 +279,30 @@ function validarExpiracionTarjeta(valor) {
   return finMes >= new Date()
 }
 
+function formatearNumeroTarjeta(valor) {
+  return String(valor || '')
+    .replace(/\D/g, '')
+    .slice(0, 16)
+    .replace(/(.{4})/g, '$1 ')
+    .trim()
+}
+
+function handleNumeroTarjetaInput(event) {
+  pagoSimuladoForm.value.numeroTarjeta = formatearNumeroTarjeta(event.target.value)
+
+  if (numeroTarjetaValido.value && erroresPagoSimulado.value.numeroTarjeta) {
+    const { numeroTarjeta, ...restoErrores } = erroresPagoSimulado.value
+    erroresPagoSimulado.value = restoErrores
+  }
+}
+
 function validarPagoSimulado() {
   const errores = {}
-  const numero = pagoSimuladoForm.value.numeroTarjeta.replace(/\D/g, '')
+  const numero = numeroTarjetaDigitos.value
 
   if (!pagoSimuladoForm.value.titular.trim()) errores.titular = 'Ingresa el nombre del titular.'
   if (!numero) errores.numeroTarjeta = 'Ingresa el numero de tarjeta.'
-  else if (numero.length !== 16 || !validarLuhn(numero)) errores.numeroTarjeta = 'Usa una tarjeta simulada valida de 16 digitos.'
+  else if (numero.length !== 16) errores.numeroTarjeta = 'Ingresa un numero de tarjeta de 16 digitos.'
   if (!validarExpiracionTarjeta(pagoSimuladoForm.value.expiracion)) errores.expiracion = 'Usa formato MM/AA con fecha vigente.'
   if (!/^\d{3,4}$/.test(pagoSimuladoForm.value.cvv.trim())) errores.cvv = 'El CVV debe tener 3 o 4 digitos.'
 
@@ -781,18 +786,11 @@ async function confirmarPagoSimulado() {
 
   if (procesandoPago.value || procesandoPagoSimulado.value || !validarPagoSimulado()) return
 
-  const numero = pagoSimuladoForm.value.numeroTarjeta.replace(/\D/g, '')
   procesandoPagoSimulado.value = true
 
   try {
     estadoProceso.value = 'Procesando pago simulado...'
     await new Promise((resolve) => setTimeout(resolve, 1200))
-
-    if (numero === '4000000000000002') {
-      errorPagoSimulado.value = 'Pago rechazado por la pasarela simulada.'
-      estadoProceso.value = ''
-      return
-    }
 
     mostrarModalPagoSimulado.value = false
     procesandoPago.value = true
@@ -1085,7 +1083,7 @@ onMounted(async () => {
             <p class="text-sm font-semibold uppercase tracking-[0.24em] text-gold-dark">Pago seguro</p>
             <h2 class="mt-2 text-2xl font-bold text-navy">Pasarela simulada</h2>
             <p class="mt-2 text-sm text-text-muted">
-              Estos datos no se guardan ni se envian al backend. Solo validan la simulacion antes de crear la reserva.
+              Ingresa una tarjeta de prueba para validar el pago y continuar con la reserva.
             </p>
           </div>
           <button type="button" class="rounded-xl p-2 text-slate-500 hover:bg-slate-100" @click="cerrarPagoSimulado">
@@ -1126,16 +1124,31 @@ onMounted(async () => {
 
           <label class="block sm:col-span-2">
             <span class="mb-2 block text-sm font-semibold text-navy">Numero de tarjeta</span>
-            <input
-              v-model="pagoSimuladoForm.numeroTarjeta"
-              type="text"
-              inputmode="numeric"
-              autocomplete="cc-number"
-              maxlength="19"
-              class="w-full rounded-xl border border-transparent bg-gray-100 px-4 py-3 text-sm text-text-main outline-none transition focus:border-blue-accent focus:ring-2 focus:ring-blue-accent/20"
-              :class="erroresPagoSimulado.numeroTarjeta && '!border-error focus:!ring-error/20'"
-              placeholder="4111 1111 1111 1111"
-            />
+            <div class="relative">
+              <input
+                :value="pagoSimuladoForm.numeroTarjeta"
+                type="text"
+                inputmode="numeric"
+                autocomplete="cc-number"
+                maxlength="19"
+                class="w-full rounded-xl border border-transparent bg-gray-100 px-4 py-3 pr-12 text-sm text-text-main outline-none transition focus:border-blue-accent focus:ring-2 focus:ring-blue-accent/20"
+                :class="[
+                  erroresPagoSimulado.numeroTarjeta && '!border-error focus:!ring-error/20',
+                  numeroTarjetaValido && !erroresPagoSimulado.numeroTarjeta && '!border-emerald-400 focus:!border-emerald-500 focus:!ring-emerald-500/20',
+                ]"
+                placeholder="4111 1111 1111 1111"
+                @input="handleNumeroTarjetaInput"
+              />
+              <span
+                v-if="numeroTarjetaValido && !erroresPagoSimulado.numeroTarjeta"
+                class="pointer-events-none absolute right-4 top-1/2 flex h-6 w-6 -translate-y-1/2 items-center justify-center rounded-full bg-emerald-500 text-white"
+                aria-hidden="true"
+              >
+                <svg class="h-4 w-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+                </svg>
+              </span>
+            </div>
             <p v-if="erroresPagoSimulado.numeroTarjeta" class="mt-1.5 text-xs text-error">{{ erroresPagoSimulado.numeroTarjeta }}</p>
           </label>
 
@@ -1178,10 +1191,6 @@ onMounted(async () => {
               <option value="DEBITO">Debito</option>
             </select>
           </label>
-        </div>
-
-        <div class="mt-6 rounded-2xl bg-blue-50 px-4 py-3 text-sm text-blue-accent">
-          Tarjeta aprobada de prueba: 4111 1111 1111 1111. Tarjeta rechazada: 4000 0000 0000 0002.
         </div>
 
         <button
