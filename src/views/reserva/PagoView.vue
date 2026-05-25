@@ -1106,9 +1106,9 @@ onMounted(async () => {
         <div class="flex items-start justify-between gap-4">
           <div>
             <p class="text-sm font-semibold uppercase tracking-[0.24em] text-gold-dark">Pago seguro</p>
-            <h2 class="mt-2 text-2xl font-bold text-navy">Pasarela simulada</h2>
+            <h2 class="mt-2 text-2xl font-bold text-navy">Pasarela de pago</h2>
             <p class="mt-2 text-sm text-text-muted">
-              Ingresa una tarjeta de prueba para validar el pago y continuar con la reserva.
+              Ingresa los datos de tu tarjeta para validar el pago y continuar con la reserva.
             </p>
           </div>
           <button type="button" class="rounded-xl p-2 text-slate-500 hover:bg-slate-100" @click="cerrarPagoSimulado">
@@ -1125,8 +1125,8 @@ onMounted(async () => {
             <div class="absolute inset-4 rounded-full border border-dashed border-gold/50"></div>
             <div class="absolute inset-0 animate-[spin_3.2s_linear_infinite]">
               <div class="absolute left-1/2 top-0 flex h-12 w-12 -translate-x-1/2 items-center justify-center rounded-full bg-navy text-gold shadow-lg">
-                <svg class="h-6 w-6 rotate-45" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 16l20-5-8 8-2-5.5L6 11l-4-1 20-5-5 20-3.5-7L2 16Z" />
+                <svg class="h-7 w-7" fill="currentColor" viewBox="0 0 64 64" aria-hidden="true">
+                  <path d="M58.9 36.4 36.5 29.8V8.7C36.5 5.7 34.5 3 32 3s-4.5 2.7-4.5 5.7v21.1L5.1 36.4C3.9 36.8 3 37.9 3 39.2v3.2c0 1 .9 1.8 1.9 1.5L27.5 39v9.8l-7.3 5.3c-.7.5-1.1 1.3-1.1 2.2v2.2c0 .8.8 1.3 1.5 1L32 55.3l11.4 4.2c.7.3 1.5-.2 1.5-1v-2.2c0-.9-.4-1.7-1.1-2.2l-7.3-5.3V39l22.6 4.9c1 .2 1.9-.5 1.9-1.5v-3.2c0-1.3-.9-2.4-2.1-2.8Z" />
                 </svg>
               </div>
             </div>
