@@ -34,6 +34,7 @@ const errorAuth = ref('')
 const errorPagoSimulado = ref('')
 const procesandoPago = ref(false)
 const procesandoPagoSimulado = ref(false)
+const estadoPagoSimulado = ref('idle')
 const cargandoCiudades = ref(false)
 const estadoProceso = ref('')
 const ciudades = ref([])
@@ -191,6 +192,7 @@ function limpiarModal() {
 function limpiarPagoSimulado() {
   errorPagoSimulado.value = ''
   erroresPagoSimulado.value = {}
+  estadoPagoSimulado.value = 'idle'
 }
 
 function persistirPasajeroBackend(indice, idPasajero) {
@@ -292,6 +294,21 @@ function handleNumeroTarjetaInput(event) {
 
   if (numeroTarjetaValido.value && erroresPagoSimulado.value.numeroTarjeta) {
     const { numeroTarjeta, ...restoErrores } = erroresPagoSimulado.value
+    erroresPagoSimulado.value = restoErrores
+  }
+}
+
+function formatearExpiracionTarjeta(valor) {
+  const digitos = String(valor || '').replace(/\D/g, '').slice(0, 4)
+  if (digitos.length <= 2) return digitos
+  return `${digitos.slice(0, 2)}/${digitos.slice(2)}`
+}
+
+function handleExpiracionTarjetaInput(event) {
+  pagoSimuladoForm.value.expiracion = formatearExpiracionTarjeta(event.target.value)
+
+  if (validarExpiracionTarjeta(pagoSimuladoForm.value.expiracion) && erroresPagoSimulado.value.expiracion) {
+    const { expiracion, ...restoErrores } = erroresPagoSimulado.value
     erroresPagoSimulado.value = restoErrores
   }
 }
@@ -787,10 +804,14 @@ async function confirmarPagoSimulado() {
   if (procesandoPago.value || procesandoPagoSimulado.value || !validarPagoSimulado()) return
 
   procesandoPagoSimulado.value = true
+  estadoPagoSimulado.value = 'processing'
 
   try {
     estadoProceso.value = 'Procesando pago simulado...'
     await new Promise((resolve) => setTimeout(resolve, 1200))
+    estadoPagoSimulado.value = 'approved'
+    estadoProceso.value = ''
+    await new Promise((resolve) => setTimeout(resolve, 850))
 
     mostrarModalPagoSimulado.value = false
     procesandoPago.value = true
@@ -953,7 +974,7 @@ onMounted(async () => {
           <div>
             <h2 class="text-2xl font-bold text-navy">Autenticacion para completar la compra</h2>
             <p class="mt-2 text-text-muted">
-              Tu compra aun vive solo en sessionStorage. Al autenticarte la convertiremos en pasajeros, reserva y pago reales.
+              Inicia sesion o crea tu cuenta para continuar con el pago y confirmar la reserva.
             </p>
           </div>
           <button type="button" class="rounded-xl p-2 text-slate-500 hover:bg-slate-100" @click="cerrarAutenticacion">
@@ -1091,6 +1112,41 @@ onMounted(async () => {
           </button>
         </div>
 
+        <div
+          v-if="estadoPagoSimulado === 'processing'"
+          class="mt-8 flex min-h-[440px] flex-col items-center justify-center text-center"
+        >
+          <div class="relative h-40 w-40">
+            <div class="absolute inset-0 rounded-full border border-blue-accent/15"></div>
+            <div class="absolute inset-4 rounded-full border border-dashed border-gold/50"></div>
+            <div class="absolute inset-0 animate-spin">
+              <div class="absolute left-1/2 top-0 flex h-12 w-12 -translate-x-1/2 items-center justify-center rounded-full bg-navy text-gold shadow-lg">
+                <svg class="h-6 w-6 rotate-45" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 16l20-5-8 8-2-5.5L6 11l-4-1 20-5-5 20-3.5-7L2 16Z" />
+                </svg>
+              </div>
+            </div>
+            <div class="absolute inset-12 rounded-full bg-slate-50 shadow-inner"></div>
+          </div>
+          <h3 class="mt-6 text-2xl font-bold text-navy">Procesando pago</h3>
+          <p class="mt-2 max-w-sm text-sm text-text-muted">Validando tu transaccion de forma segura...</p>
+          <p class="mt-5 rounded-2xl bg-slate-50 px-5 py-3 text-lg font-semibold text-navy">{{ moneda(totalPagar) }}</p>
+        </div>
+
+        <div
+          v-else-if="estadoPagoSimulado === 'approved'"
+          class="mt-8 flex min-h-[440px] flex-col items-center justify-center text-center"
+        >
+          <div class="flex h-28 w-28 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/20">
+            <svg class="h-14 w-14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="3" d="M5 13l4 4L19 7" />
+            </svg>
+          </div>
+          <h3 class="mt-6 text-2xl font-bold text-navy">Pago aprobado</h3>
+          <p class="mt-2 max-w-sm text-sm text-text-muted">Estamos confirmando tu reserva.</p>
+        </div>
+
+        <template v-else>
         <div v-if="errorPagoSimulado" class="mt-6 rounded-2xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
           {{ errorPagoSimulado }}
         </div>
@@ -1155,13 +1211,15 @@ onMounted(async () => {
           <label class="block">
             <span class="mb-2 block text-sm font-semibold text-navy">Expiracion</span>
             <input
-              v-model="pagoSimuladoForm.expiracion"
+              :value="pagoSimuladoForm.expiracion"
               type="text"
+              inputmode="numeric"
               autocomplete="cc-exp"
               maxlength="5"
               class="w-full rounded-xl border border-transparent bg-gray-100 px-4 py-3 text-sm text-text-main outline-none transition focus:border-blue-accent focus:ring-2 focus:ring-blue-accent/20"
               :class="erroresPagoSimulado.expiracion && '!border-error focus:!ring-error/20'"
               placeholder="MM/AA"
+              @input="handleExpiracionTarjetaInput"
             />
             <p v-if="erroresPagoSimulado.expiracion" class="mt-1.5 text-xs text-error">{{ erroresPagoSimulado.expiracion }}</p>
           </label>
@@ -1198,8 +1256,9 @@ onMounted(async () => {
           class="mt-6 w-full rounded-2xl bg-gold px-6 py-4 font-semibold text-navy transition-colors hover:bg-gold-light disabled:cursor-not-allowed disabled:bg-gold/50"
           :disabled="procesandoPago || procesandoPagoSimulado"
         >
-          {{ procesandoPagoSimulado || procesandoPago ? 'Procesando...' : 'Procesar pago simulado' }}
+          {{ procesandoPagoSimulado || procesandoPago ? 'Procesando...' : 'Procesar pago' }}
         </button>
+        </template>
       </form>
     </div>
   </div>
