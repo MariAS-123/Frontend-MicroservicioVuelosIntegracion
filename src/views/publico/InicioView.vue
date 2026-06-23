@@ -101,21 +101,21 @@ function cargarAeropuertosSiHaceFalta() {
       />
       <div class="absolute inset-0 bg-[linear-gradient(90deg,rgba(11,31,59,0.95)_0%,rgba(11,31,59,0.88)_38%,rgba(19,51,92,0.72)_100%)]" />
 
-      <div class="relative mx-auto max-w-7xl px-4 pb-16 pt-12 sm:px-6 lg:px-8 lg:pb-24 lg:pt-20">
+      <div class="relative mx-auto max-w-7xl px-4 pb-12 pt-10 sm:px-6 lg:px-8 lg:pb-24 lg:pt-20">
         <div class="mx-auto max-w-4xl text-center">
-          <h1 class="text-5xl font-extrabold leading-tight text-white sm:text-6xl">
+          <h1 class="break-words text-4xl font-extrabold leading-tight text-white sm:text-6xl">
             Vuela con <span class="text-gold">Elegancia</span>
           </h1>
-          <p class="mx-auto mt-6 max-w-3xl text-xl leading-9 text-white/90">
+          <p class="mx-auto mt-6 max-w-3xl text-base leading-8 text-white/90 sm:text-xl sm:leading-9">
             Descubre el mundo con MPAS Airways. Conectamos destinos, creamos experiencias.
           </p>
         </div>
 
-        <div class="mx-auto mt-14 max-w-5xl rounded-[30px] bg-white p-5 shadow-[0_22px_65px_rgba(7,16,32,0.22)] sm:p-8">
-          <div class="mb-7 flex flex-wrap gap-3">
+        <div class="mx-auto mt-10 w-full max-w-5xl rounded-[24px] bg-white p-4 sm:mt-14 sm:rounded-[30px] shadow-[0_22px_65px_rgba(7,16,32,0.22)] sm:p-8">
+          <div class="mb-6 grid grid-cols-2 gap-3 sm:flex sm:flex-wrap">
             <button
               type="button"
-              class="rounded-2xl px-6 py-3 text-lg font-semibold transition-colors"
+              class="rounded-2xl px-3 py-3 text-base font-semibold transition-colors sm:px-6 sm:text-lg"
               :class="tipoViaje === 'IDA_VUELTA' ? 'bg-navy text-white' : 'bg-slate-100 text-text-main hover:bg-slate-200'"
               @click="tipoViaje = 'IDA_VUELTA'"
             >
@@ -123,7 +123,7 @@ function cargarAeropuertosSiHaceFalta() {
             </button>
             <button
               type="button"
-              class="rounded-2xl px-6 py-3 text-lg font-semibold transition-colors"
+              class="rounded-2xl px-3 py-3 text-base font-semibold transition-colors sm:px-6 sm:text-lg"
               :class="tipoViaje === 'SOLO_IDA' ? 'bg-navy text-white' : 'bg-slate-100 text-text-main hover:bg-slate-200'"
               @click="tipoViaje = 'SOLO_IDA'"
             >
@@ -143,7 +143,7 @@ function cargarAeropuertosSiHaceFalta() {
                 </span>
                 <select
                   v-model="form.origen"
-                  class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-lg text-text-main outline-none transition focus:border-blue-accent focus:ring-4 focus:ring-blue-accent/10"
+                  class="w-full min-w-0 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base sm:px-5 sm:py-4 sm:text-lg text-text-main outline-none transition focus:border-blue-accent focus:ring-4 focus:ring-blue-accent/10"
                   @focus="cargarAeropuertosSiHaceFalta"
                 >
                   <option value="">¿Desde dónde viajas?</option>
@@ -164,7 +164,7 @@ function cargarAeropuertosSiHaceFalta() {
                 </span>
                 <select
                   v-model="form.destino"
-                  class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-lg text-text-main outline-none transition focus:border-blue-accent focus:ring-4 focus:ring-blue-accent/10"
+                  class="w-full min-w-0 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base sm:px-5 sm:py-4 sm:text-lg text-text-main outline-none transition focus:border-blue-accent focus:ring-4 focus:ring-blue-accent/10"
                   @focus="cargarAeropuertosSiHaceFalta"
                 >
                   <option value="">¿A dónde quieres ir?</option>
@@ -187,7 +187,7 @@ function cargarAeropuertosSiHaceFalta() {
                 <input
                   v-model="form.salida"
                   type="date"
-                  class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-lg text-text-main outline-none transition focus:border-blue-accent focus:ring-4 focus:ring-blue-accent/10"
+                  class="w-full min-w-0 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base sm:px-5 sm:py-4 sm:text-lg text-text-main outline-none transition focus:border-blue-accent focus:ring-4 focus:ring-blue-accent/10"
                 />
                 <p v-if="errores.salida" class="mt-2 text-sm text-error">{{ errores.salida }}</p>
               </label>
@@ -202,7 +202,7 @@ function cargarAeropuertosSiHaceFalta() {
                 <input
                   v-model="form.regreso"
                   type="date"
-                  class="w-full rounded-2xl border border-slate-200 bg-slate-50 px-5 py-4 text-lg text-text-main outline-none transition focus:border-blue-accent focus:ring-4 focus:ring-blue-accent/10"
+                  class="w-full min-w-0 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-base sm:px-5 sm:py-4 sm:text-lg text-text-main outline-none transition focus:border-blue-accent focus:ring-4 focus:ring-blue-accent/10"
                 />
                 <p v-if="errores.regreso" class="mt-2 text-sm text-error">{{ errores.regreso }}</p>
               </label>
@@ -211,7 +211,7 @@ function cargarAeropuertosSiHaceFalta() {
 
             <button
               type="submit"
-              class="flex w-full items-center justify-center gap-3 rounded-2xl bg-gold px-6 py-4 text-xl font-semibold text-navy transition-colors hover:bg-gold-light"
+              class="flex w-full items-center justify-center gap-3 rounded-2xl bg-gold px-5 py-3.5 text-base sm:px-6 sm:py-4 sm:text-xl font-semibold text-navy transition-colors hover:bg-gold-light"
             >
               <span
                 v-if="cargandoBusqueda"
@@ -235,7 +235,7 @@ function cargarAeropuertosSiHaceFalta() {
 
         <div class="flex flex-col justify-center">
           <span class="text-sm font-semibold uppercase tracking-[0.26em] text-gold-dark">Quiénes Somos</span>
-          <h2 class="mt-5 text-4xl font-bold text-navy sm:text-5xl">Una aerolínea pensada para viajar con estilo</h2>
+          <h2 class="mt-5 break-words text-3xl font-bold text-navy sm:text-5xl">Una aerolínea pensada para viajar con estilo</h2>
           <p class="mt-6 text-lg leading-8 text-text-muted">
             En MPAS Airways diseñamos experiencias de viaje claras, elegantes y bien conectadas. Nuestro enfoque combina tecnología, atención cercana y rutas pensadas para que reservar sea tan agradable como el vuelo mismo.
           </p>
@@ -259,22 +259,22 @@ function cargarAeropuertosSiHaceFalta() {
 
     <section class="bg-[#F7F8FB] py-20">
       <div class="mx-auto max-w-7xl px-4 text-center sm:px-6 lg:px-8">
-        <h2 class="text-4xl font-bold text-navy">¿Por qué volar con MPAS Airways?</h2>
-        <p class="mt-4 text-xl text-text-muted">Experiencia premium en cada detalle</p>
+        <h2 class="break-words text-3xl font-bold text-navy sm:text-4xl">¿Por qué volar con MPAS Airways?</h2>
+        <p class="mt-4 text-lg text-text-muted sm:text-xl">Experiencia premium en cada detalle</p>
 
         <div class="mt-14 grid gap-8 lg:grid-cols-3">
           <article
             v-for="ventaja in ventajas"
             :key="ventaja.titulo"
-            class="rounded-[28px] bg-white px-8 py-10 text-center shadow-[0_10px_25px_rgba(15,23,42,0.08)]"
+            class="rounded-[28px] bg-white px-5 py-8 sm:px-8 sm:py-10 text-center shadow-[0_10px_25px_rgba(15,23,42,0.08)]"
           >
             <div class="mx-auto flex h-16 w-16 items-center justify-center rounded-full" :class="ventaja.color">
               <svg class="h-8 w-8" fill="currentColor" viewBox="0 0 24 24">
                 <path :d="iconPath(ventaja.icono)" />
               </svg>
             </div>
-            <h3 class="mt-8 text-3xl font-bold text-navy">{{ ventaja.titulo }}</h3>
-            <p class="mt-5 text-lg leading-8 text-text-muted">{{ ventaja.texto }}</p>
+            <h3 class="mt-8 text-2xl font-bold text-navy sm:text-3xl">{{ ventaja.titulo }}</h3>
+            <p class="mt-5 text-base leading-8 text-text-muted sm:text-lg">{{ ventaja.texto }}</p>
           </article>
         </div>
       </div>
@@ -282,20 +282,20 @@ function cargarAeropuertosSiHaceFalta() {
 
     <section class="bg-white py-20">
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-        <div class="relative overflow-hidden rounded-[30px] bg-[linear-gradient(120deg,#183761_0%,#1E497C_100%)] px-8 py-16 text-center shadow-[0_20px_50px_rgba(11,31,59,0.18)] sm:px-16">
+        <div class="relative overflow-hidden rounded-[24px] bg-[linear-gradient(120deg,#183761_0%,#1E497C_100%)] px-5 py-12 text-center shadow-[0_20px_50px_rgba(11,31,59,0.18)] sm:rounded-[30px] sm:px-16 sm:py-16">
           <img
             :src="IMAGENES.heroAvion"
             alt="Explorar destinos"
             class="pointer-events-none absolute inset-0 h-full w-full object-cover opacity-10"
           />
           <div class="relative mx-auto max-w-3xl">
-            <h2 class="text-4xl font-bold text-white">¿Listo para tu próxima aventura?</h2>
-            <p class="mt-5 text-xl leading-9 text-white/90">
+            <h2 class="text-3xl font-bold text-white sm:text-4xl">¿Listo para tu próxima aventura?</h2>
+            <p class="mt-5 text-base leading-8 text-white/90 sm:text-xl sm:leading-9">
               Reserva hoy y aprovecha nuestras ofertas exclusivas en vuelos internacionales
             </p>
             <button
               type="button"
-              class="mt-10 inline-flex items-center justify-center gap-3 rounded-2xl bg-gold px-9 py-4 text-xl font-semibold text-navy transition-colors hover:bg-gold-light"
+              class="mt-10 inline-flex w-full items-center justify-center gap-3 rounded-2xl bg-gold px-5 py-4 text-base sm:w-auto sm:px-9 sm:text-xl font-semibold text-navy transition-colors hover:bg-gold-light"
               @click="router.push('/vuelos')"
             >
               Explorar Destinos

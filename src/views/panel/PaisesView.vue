@@ -202,7 +202,7 @@ onMounted(cargarPaises)
 
 <template>
   <section class="space-y-5">
-    <div class="flex items-start justify-between gap-4">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
       <div>
         <h1 class="text-[2rem] font-bold text-navy">Gestion de Paises</h1>
         <p class="mt-1.5 text-sm text-text-muted">Administra los paises donde opera MPAS Airways (Solo ADMIN).</p>
@@ -225,8 +225,8 @@ onMounted(cargarPaises)
       <InputApp v-model="busqueda" placeholder="Buscar por pais, codigo o continente..." />
     </section>
 
-    <section class="overflow-hidden rounded-[24px] bg-white shadow-sm">
-      <div class="grid grid-cols-[2fr_0.7fr_0.7fr_1.2fr_0.8fr_110px] gap-4 bg-slate-50 px-5 py-3.5 text-sm font-semibold text-navy">
+    <section class="overflow-x-auto rounded-[24px] bg-white shadow-sm">
+      <div class="grid min-w-[760px] grid-cols-[2fr_0.7fr_0.7fr_1.2fr_0.8fr_110px] gap-4 bg-slate-50 px-5 py-3.5 text-sm font-semibold text-navy">
         <span>Pais</span>
         <span>ISO2</span>
         <span>ISO3</span>
@@ -242,7 +242,7 @@ onMounted(cargarPaises)
         <div
           v-for="pais in paisesOrdenados"
           :key="pais.idPais"
-          class="grid grid-cols-[2fr_0.7fr_0.7fr_1.2fr_0.8fr_110px] items-center gap-4 px-5 py-4"
+          class="grid min-w-[760px] grid-cols-[2fr_0.7fr_0.7fr_1.2fr_0.8fr_110px] items-center gap-4 px-5 py-4"
         >
           <div class="flex items-center gap-3">
             <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-navy">

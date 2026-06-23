@@ -235,7 +235,7 @@ onMounted(cargarReservas)
 
     <div class="grid gap-6 lg:grid-cols-[1.15fr_0.95fr]">
       <section class="rounded-[30px] bg-white p-8 shadow-sm">
-        <div class="flex items-center justify-between gap-4">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <h2 class="text-2xl font-semibold text-navy">Próximos Vuelos</h2>
           <button
             type="button"
@@ -258,15 +258,15 @@ onMounted(cargarReservas)
             :key="reserva.idReserva || `${reserva.numeroVuelo}-${reserva.fechaInicio}`"
             class="flex flex-col gap-5 rounded-[24px] bg-slate-50 px-5 py-5 shadow-sm sm:flex-row sm:items-center sm:justify-between"
           >
-            <div class="flex items-center gap-4">
+            <div class="flex min-w-0 items-center gap-4">
               <div class="flex h-16 w-16 items-center justify-center rounded-[20px] bg-slate-200 text-navy">
                 <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M10.18 9 6 11l-2 4 5.5-1.5L12 18l2-1-1.5-4.5L18 10l-1-2-5 1.5L10 5 8 6l2.18 3Z" />
                 </svg>
               </div>
 
-              <div>
-                <p class="text-2xl font-semibold text-navy">{{ reserva.ciudadOrigen }} → {{ reserva.ciudadDestino }}</p>
+              <div class="min-w-0">
+                <p class="break-words text-xl font-semibold text-navy sm:text-2xl">{{ reserva.ciudadOrigen }} → {{ reserva.ciudadDestino }}</p>
                 <p class="mt-1 text-text-muted">{{ longDate(reserva.fechaInicio) }} · {{ shortTime(reserva.fechaInicio) }}</p>
               </div>
             </div>

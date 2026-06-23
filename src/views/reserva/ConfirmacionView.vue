@@ -88,7 +88,7 @@ onMounted(() => {
             <div class="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-emerald-100 text-emerald-600">
               <span class="text-4xl">✓</span>
             </div>
-            <h1 class="mt-6 text-4xl font-bold text-navy sm:text-5xl">¡Reserva Confirmada!</h1>
+            <h1 class="mt-6 text-3xl font-bold text-navy sm:text-5xl">¡Reserva Confirmada!</h1>
             <p class="mt-3 text-lg text-text-muted sm:text-xl">Tu reserva ha sido procesada exitosamente</p>
           </div>
 
@@ -97,7 +97,7 @@ onMounted(() => {
             class="mx-auto mt-8 max-w-5xl rounded-[30px] bg-navy px-6 py-8 text-center text-white sm:px-8 sm:py-9"
           >
             <p class="text-xl font-semibold sm:text-2xl">Código de Reserva</p>
-            <p class="mt-4 text-5xl font-bold tracking-wide sm:text-6xl">{{ confirmacion.codigoReserva || 'AV1001' }}</p>
+            <p class="mt-4 break-all text-3xl font-bold tracking-wide sm:text-6xl">{{ confirmacion.codigoReserva || 'AV1001' }}</p>
             <p class="mt-3 text-base text-white/80 sm:text-lg">Guarda este código para gestionar tu reserva</p>
           </div>
 
@@ -183,7 +183,7 @@ onMounted(() => {
                       <p class="text-base text-navy sm:text-lg">Número de Boleto</p>
                       <p class="mt-2 text-2xl font-bold text-navy sm:text-3xl">{{ boletoEmitido(index) }}</p>
                     </div>
-                    <div class="text-right">
+                    <div class="sm:text-right">
                       <p class="text-sm text-text-muted">Estado</p>
                       <p class="mt-2 inline-flex rounded-full bg-emerald-100 px-4 py-1 text-base font-semibold text-emerald-600">Emitido</p>
                     </div>
@@ -200,7 +200,7 @@ onMounted(() => {
                     <p class="text-base text-navy sm:text-lg">Número de Factura</p>
                     <p class="mt-2 text-3xl font-bold text-navy sm:text-4xl">INV-{{ confirmacion.numeroVuelo || 'AV1001' }}</p>
                   </div>
-                  <div class="text-right">
+                  <div class="sm:text-right">
                     <p class="text-sm text-text-muted">Fecha</p>
                     <p class="mt-2 text-xl font-semibold text-navy sm:text-2xl">{{ fechaLegible(confirmacion.fecha) }}</p>
                   </div>
@@ -229,7 +229,7 @@ onMounted(() => {
                   </div>
                 </div>
 
-                <div class="mt-6 flex items-center justify-between border-t border-slate-200 pt-5">
+                <div class="mt-6 flex flex-col gap-2 border-t border-slate-200 pt-5 sm:flex-row sm:items-center sm:justify-between">
                   <span class="text-xl font-semibold text-navy sm:text-2xl">Total Pagado</span>
                   <span class="text-2xl font-bold text-navy sm:text-3xl">{{ moneda(confirmacion.totalPagado) }}</span>
                 </div>
@@ -239,7 +239,7 @@ onMounted(() => {
             <div class="border-t border-slate-200 pt-8 text-center">
               <button
                 type="button"
-                class="rounded-2xl bg-gold px-8 py-3 text-lg font-semibold text-navy transition-colors hover:bg-gold-light disabled:cursor-not-allowed disabled:bg-gold/50"
+                class="w-full rounded-2xl bg-gold px-6 py-3 text-base sm:w-auto sm:px-8 sm:text-lg font-semibold text-navy transition-colors hover:bg-gold-light disabled:cursor-not-allowed disabled:bg-gold/50"
                 :disabled="enviandoEmail || emailEnviado"
                 @click="simularEnvioEmail"
               >

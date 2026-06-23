@@ -357,7 +357,7 @@ onMounted(cargarTodo)
 
 <template>
   <section class="space-y-5">
-    <div class="flex items-start justify-between gap-4">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
       <div>
         <h1 class="text-[2rem] font-bold text-navy">Gestion de Aeropuertos</h1>
         <p class="mt-1.5 text-sm text-text-muted">Administra la red de aeropuertos (Admin y Aerolinea).</p>
@@ -380,8 +380,8 @@ onMounted(cargarTodo)
       <InputApp v-model="busqueda" placeholder="Buscar por codigo IATA, nombre, ciudad o pais..." />
     </section>
 
-    <section class="overflow-hidden rounded-[24px] bg-white shadow-sm">
-      <div class="grid grid-cols-[0.9fr_2fr_1.1fr_1.1fr_140px] gap-4 bg-slate-50 px-5 py-3.5 text-sm font-semibold text-navy">
+    <section class="overflow-x-auto rounded-[24px] bg-white shadow-sm">
+      <div class="grid min-w-[760px] grid-cols-[0.9fr_2fr_1.1fr_1.1fr_140px] gap-4 bg-slate-50 px-5 py-3.5 text-sm font-semibold text-navy">
         <span>Codigo IATA</span>
         <span>Nombre del Aeropuerto</span>
         <span>Ciudad</span>
@@ -396,7 +396,7 @@ onMounted(cargarTodo)
         <div
           v-for="aeropuerto in aeropuertosFiltrados"
           :key="aeropuerto.idAeropuerto"
-          class="grid grid-cols-[0.9fr_2fr_1.1fr_1.1fr_140px] items-center gap-4 px-5 py-4"
+          class="grid min-w-[760px] grid-cols-[0.9fr_2fr_1.1fr_1.1fr_140px] items-center gap-4 px-5 py-4"
         >
           <div class="flex items-center gap-3">
             <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-navy">

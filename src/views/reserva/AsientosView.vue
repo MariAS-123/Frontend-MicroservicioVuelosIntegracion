@@ -258,7 +258,7 @@ onMounted(async () => {
         </div>
 
         <div v-else class="grid gap-8 lg:grid-cols-[1.35fr_0.8fr]">
-          <div class="rounded-[28px] bg-white p-8 shadow-sm">
+          <div class="rounded-[28px] bg-white p-5 shadow-sm sm:p-8">
             <p class="text-sm font-semibold uppercase tracking-[0.28em] text-gold-dark">Paso 3</p>
             <h1 class="mt-3 text-3xl font-bold text-navy">Seleccion de asientos</h1>
             <p class="mt-4 text-text-muted">
@@ -270,7 +270,7 @@ onMounted(async () => {
                 v-for="pasajero in pasajerosConSeleccion"
                 :key="pasajero.indice"
                 type="button"
-                class="rounded-2xl border px-4 py-3 text-left transition-colors"
+                class="min-w-[150px] flex-1 rounded-2xl border px-4 py-3 text-left transition-colors sm:flex-none"
                 :class="
                   pasajeroActivo === pasajero.indice
                     ? 'border-gold bg-gold/10'
@@ -280,15 +280,15 @@ onMounted(async () => {
                 "
                 @click="pasajeroActivo = pasajero.indice"
               >
-                <p class="font-semibold text-navy">{{ pasajero.nombre }}</p>
+                <p class="break-words font-semibold text-navy">{{ pasajero.nombre }}</p>
                 <p class="mt-1 text-sm text-text-muted">
                   {{ pasajero.asiento?.numeroAsiento || 'Sin asiento seleccionado' }}
                 </p>
               </button>
             </div>
 
-            <div class="mt-8 rounded-[24px] border border-slate-200 p-6">
-              <div class="flex items-center justify-center gap-6 text-sm text-navy">
+            <div class="mt-8 rounded-[24px] border border-slate-200 p-4 sm:p-6">
+              <div class="flex flex-wrap items-center justify-center gap-3 text-sm text-navy sm:gap-6">
                 <div class="flex items-center gap-2">
                   <span class="h-6 w-6 rounded-md border border-blue-100 bg-sky-100" />
                   <span>Disponible</span>
@@ -322,12 +322,12 @@ onMounted(async () => {
                 {{ errorGeneral }}
               </div>
 
-              <div v-else class="mt-8 overflow-x-auto">
-                <div class="mx-auto min-w-[420px] max-w-[520px]">
+              <div v-else class="mt-8 overflow-x-auto pb-2">
+                <div class="mx-auto min-w-[360px] max-w-[520px] sm:min-w-[420px]">
                   <div
                     v-for="fila in filas"
                     :key="fila"
-                    class="grid grid-cols-[32px_repeat(3,40px)_28px_repeat(3,40px)] items-center gap-3 py-1"
+                    class="grid grid-cols-[28px_repeat(3,34px)_24px_repeat(3,34px)] items-center gap-2 py-1 sm:grid-cols-[32px_repeat(3,40px)_28px_repeat(3,40px)] sm:gap-3"
                   >
                     <span class="text-right text-sm text-text-muted">{{ fila }}</span>
 
@@ -341,7 +341,7 @@ onMounted(async () => {
                             ? 'Asiento no disponible'
                             : `${fila}${columna}`
                         "
-                        class="group relative flex h-10 w-10 items-center justify-center rounded-md border text-sm font-medium transition"
+                        class="group relative flex h-[34px] w-[34px] items-center justify-center rounded-md border text-xs font-medium transition sm:h-10 sm:w-10 sm:text-sm"
                         :class="{
                           'cursor-pointer border-blue-100 bg-sky-100 text-navy hover:bg-sky-200': estadoAsiento(asientoPorPosicion(fila, columna), fila, columna) === 'disponible',
                           'cursor-pointer border-gold bg-gold text-navy': estadoAsiento(asientoPorPosicion(fila, columna), fila, columna) === 'seleccionado',
@@ -372,7 +372,7 @@ onMounted(async () => {
                 <div class="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
                   <div>
                     <p class="text-sm text-text-muted">Asiento seleccionado para {{ pasajeroActivoData?.nombre }}</p>
-                    <p class="mt-2 text-3xl font-light text-navy">
+                    <p class="mt-2 text-2xl font-light text-navy sm:text-3xl">
                       {{ pasajeroActivoData?.asiento?.numeroAsiento || '--' }}
                     </p>
                     <div v-if="pasajeroActivoData?.asiento" class="mt-2 space-y-1 text-sm text-text-muted">
@@ -384,7 +384,7 @@ onMounted(async () => {
 
                   <button
                     type="button"
-                    class="inline-flex items-center justify-center gap-2 rounded-2xl bg-gold px-6 py-3 font-semibold text-navy transition-colors hover:bg-gold-light disabled:cursor-not-allowed disabled:bg-gold/40"
+                    class="inline-flex w-full items-center justify-center gap-2 rounded-2xl bg-gold px-6 py-3 font-semibold text-navy transition-colors hover:bg-gold-light disabled:cursor-not-allowed disabled:bg-gold/40 sm:w-auto"
                     :disabled="!pasajerosCompletos"
                     @click="continuarEquipaje"
                   >
@@ -396,31 +396,31 @@ onMounted(async () => {
             </div>
           </div>
 
-          <aside class="rounded-[28px] bg-white p-8 shadow-sm">
+          <aside class="rounded-[28px] bg-white p-5 shadow-sm sm:p-8">
             <h2 class="text-2xl font-bold text-navy">Resumen del Vuelo</h2>
             <div class="mt-6 space-y-4 text-text-muted">
-              <div class="flex items-center justify-between">
+              <div class="flex items-center justify-between gap-4">
                 <span>Codigo</span>
                 <span class="font-semibold text-navy">{{ vuelo.numeroVuelo }}</span>
               </div>
-              <div class="flex items-center justify-between">
+              <div class="flex items-center justify-between gap-4">
                 <span>Fecha</span>
                 <span class="font-semibold text-navy">{{ fechaLegible(vuelo.fechaHoraSalida) }}</span>
               </div>
-              <div class="flex items-center justify-between">
+              <div class="flex items-center justify-between gap-4">
                 <span>Pasajeros</span>
                 <span class="font-semibold text-navy">{{ pasajeros.length }}</span>
               </div>
-              <div class="flex items-center justify-between">
+              <div class="flex items-center justify-between gap-4">
                 <span>Clase</span>
                 <span class="font-semibold text-navy">{{ vuelo.clase }}</span>
               </div>
             </div>
 
             <div class="mt-6 border-t border-slate-200 pt-6">
-              <div class="flex items-center justify-between">
-                <span class="text-2xl font-semibold text-navy">Desde</span>
-                <span class="text-4xl font-light text-navy">{{ moneda(vuelo.precioBase) }}</span>
+              <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                <span class="text-xl font-semibold text-navy sm:text-2xl">Desde</span>
+                <span class="text-3xl font-light text-navy sm:text-4xl">{{ moneda(vuelo.precioBase) }}</span>
               </div>
             </div>
 
@@ -441,11 +441,11 @@ onMounted(async () => {
             </div>
 
             <div class="mt-6 border-t border-slate-200 pt-6 text-text-muted">
-              <div class="flex items-center justify-between">
+              <div class="flex items-center justify-between gap-4">
                 <span>Recargo por asientos</span>
                 <span class="font-semibold text-navy">{{ moneda(recargoAsientos) }}</span>
               </div>
-              <div class="mt-3 flex items-center justify-between">
+              <div class="mt-3 flex items-center justify-between gap-4">
                 <span class="text-lg font-semibold text-navy">Total estimado</span>
                 <span class="text-3xl font-light text-navy">{{ moneda(totalConAsientos) }}</span>
               </div>

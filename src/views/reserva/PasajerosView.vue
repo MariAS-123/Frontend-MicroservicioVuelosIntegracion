@@ -239,7 +239,7 @@ onMounted(async () => {
         <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <p class="text-sm font-semibold uppercase tracking-[0.28em] text-gold-dark">Paso 2</p>
-            <h1 class="mt-3 text-3xl font-bold text-navy">Informacion de Pasajeros</h1>
+            <h1 class="mt-3 break-words text-2xl font-bold text-navy sm:text-3xl">Informacion de Pasajeros</h1>
             <p class="mt-3 text-text-muted">
               Primero registramos los datos de todas las personas que viajaran. Luego asignaremos un asiento por cada pasajero.
             </p>
@@ -269,14 +269,14 @@ onMounted(async () => {
               :key="pasajero.id"
               class="rounded-[28px] bg-white p-6 shadow-sm sm:p-8"
             >
-              <div class="flex items-center justify-between gap-4 border-b border-slate-200 pb-6">
-                <div class="flex items-center gap-4">
+              <div class="flex flex-col gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-center sm:justify-between">
+                <div class="flex min-w-0 items-center gap-4">
                   <div class="flex h-12 w-12 items-center justify-center rounded-full bg-slate-100 text-navy">
                     <svg class="h-6 w-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                       <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 14a4 4 0 10-8 0m8 0a4 4 0 11-8 0m8 0v1a2 2 0 002 2h1m-11-3v1a2 2 0 01-2 2H5" />
                     </svg>
                   </div>
-                  <h2 class="text-2xl font-semibold text-navy">Pasajero {{ indice + 1 }}</h2>
+                  <h2 class="break-words text-xl font-semibold text-navy sm:text-2xl">Pasajero {{ indice + 1 }}</h2>
                 </div>
 
                 <button
@@ -424,31 +424,31 @@ onMounted(async () => {
           </div>
 
           <aside class="lg:sticky lg:top-24 lg:self-start">
-            <div class="rounded-[28px] bg-white p-8 shadow-sm">
+            <div class="rounded-[28px] bg-white p-5 shadow-sm sm:p-8">
               <h2 class="text-2xl font-bold text-navy">Resumen del Vuelo</h2>
               <div class="mt-6 space-y-4 text-text-muted">
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between gap-4">
                   <span>Codigo</span>
                   <span class="font-semibold text-navy">{{ vuelo?.numeroVuelo }}</span>
                 </div>
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between gap-4">
                   <span>Fecha</span>
                   <span class="font-semibold text-navy">{{ vuelo?.fechaHoraSalida ? new Intl.DateTimeFormat('es-EC', { day: 'numeric', month: 'long', year: 'numeric' }).format(new Date(vuelo.fechaHoraSalida)) : 'Fecha por confirmar' }}</span>
                 </div>
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between gap-4">
                   <span>Pasajeros</span>
                   <span class="font-semibold text-navy">{{ pasajeros.length }}</span>
                 </div>
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between gap-4">
                   <span>Clase</span>
                   <span class="font-semibold text-navy">{{ vuelo?.clase }}</span>
                 </div>
               </div>
 
               <div class="mt-6 border-t border-slate-200 pt-6">
-                <div class="flex items-center justify-between">
-                  <span class="text-2xl font-semibold text-navy">Desde</span>
-                  <span class="text-4xl font-light text-navy">${{ Number(vuelo?.precioBase || 0).toFixed(2) }}</span>
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <span class="text-xl font-semibold text-navy sm:text-2xl">Desde</span>
+                  <span class="text-3xl font-light text-navy sm:text-4xl">${{ Number(vuelo?.precioBase || 0).toFixed(2) }}</span>
                 </div>
               </div>
 

@@ -75,9 +75,9 @@ async function cerrarSesion() {
 
 <template>
   <div class="min-h-screen bg-[#eff3f9] text-navy">
-    <div class="mx-auto flex min-h-screen max-w-[1600px]">
-      <aside class="flex w-[240px] flex-col bg-gradient-to-b from-[#0f274a] via-[#132f57] to-[#102544] px-4 py-5 text-white shadow-2xl">
-        <div class="mb-6 rounded-[26px] border border-white/10 bg-white/5 px-4 py-4 backdrop-blur">
+    <div class="mx-auto flex min-h-screen max-w-[1600px] flex-col lg:flex-row">
+      <aside class="flex w-full flex-col bg-gradient-to-b from-[#0f274a] via-[#132f57] to-[#102544] px-4 py-4 text-white shadow-2xl lg:sticky lg:top-0 lg:min-h-screen lg:w-[240px] lg:py-5">
+        <div class="mb-4 rounded-[22px] border border-white/10 bg-white/5 px-4 py-4 backdrop-blur lg:mb-6 lg:rounded-[26px]">
           <div class="flex items-center gap-3">
             <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-white/10">
               <img :src="IMAGENES.logoPrincipal" alt="MPAS Airways" class="h-7 w-7 object-contain" />
@@ -88,23 +88,23 @@ async function cerrarSesion() {
             </div>
           </div>
 
-          <div class="mt-4 rounded-2xl bg-[#193b6d]/80 px-4 py-3">
+          <div class="mt-4 hidden rounded-2xl bg-[#193b6d]/80 px-4 py-3 sm:block">
             <p class="text-xs uppercase tracking-[0.12em] text-white/60">Sesion activa</p>
             <p class="mt-1 text-lg font-semibold text-white">{{ panelRole }}</p>
           </div>
         </div>
 
-        <div class="mb-3 px-2">
+        <div class="mb-3 hidden px-2 lg:block">
           <p class="text-[11px] font-semibold uppercase tracking-[0.26em] text-white/45">Navegacion</p>
         </div>
 
-        <nav class="space-y-2">
+        <nav class="-mx-1 flex gap-2 overflow-x-auto px-1 pb-1 lg:mx-0 lg:block lg:space-y-2 lg:overflow-visible lg:px-0 lg:pb-0">
           <RouterLink
             v-for="item in menuItems"
             :key="item.label"
             :to="item.ruta"
             :class="[
-              'group flex items-center gap-3 rounded-[20px] px-4 py-3 text-sm font-medium transition-all',
+              'group flex shrink-0 items-center gap-3 rounded-[18px] px-3 py-2.5 text-sm font-medium transition-all lg:rounded-[20px] lg:px-4 lg:py-3',
               itemActivo(item.ruta)
                 ? 'bg-gold text-navy shadow-[0_12px_24px_rgba(219,174,55,0.22)]'
                 : 'text-white/82 hover:bg-white/10 hover:text-white',
@@ -125,11 +125,11 @@ async function cerrarSesion() {
                 />
               </svg>
             </span>
-            <span>{{ item.label }}</span>
+            <span class="whitespace-nowrap">{{ item.label }}</span>
           </RouterLink>
         </nav>
 
-        <div class="mt-auto space-y-4 pt-6">
+        <div class="mt-auto hidden space-y-4 pt-6 lg:block">
           <div class="rounded-[24px] border border-white/10 bg-white/5 px-4 py-4">
             <p class="text-2xl font-bold leading-none">{{ panelLabel }}</p>
             <p class="mt-1.5 text-xs uppercase tracking-[0.12em] text-white/60">Workspace MPAS</p>
@@ -167,7 +167,7 @@ async function cerrarSesion() {
         </div>
       </aside>
 
-      <main class="flex-1 px-8 py-6">
+      <main class="min-w-0 flex-1 px-4 py-5 sm:px-6 lg:px-8 lg:py-6">
         <RouterView />
       </main>
     </div>

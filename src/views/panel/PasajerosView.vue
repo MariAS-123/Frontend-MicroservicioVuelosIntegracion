@@ -430,7 +430,7 @@ onMounted(cargarPasajeros)
   <section class="space-y-5">
 
     <!-- Encabezado -->
-    <div class="flex items-start justify-between gap-4">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
       <div>
         <h1 class="text-[2rem] font-bold text-navy">Gestión de Pasajeros</h1>
         <p class="mt-1.5 text-sm text-text-muted">Administra los pasajeros registrados en el sistema.</p>
@@ -550,7 +550,7 @@ onMounted(cargarPasajeros)
     >
       <div class="w-full max-w-3xl rounded-[28px] bg-white shadow-2xl">
 
-        <div class="flex items-start justify-between gap-4 rounded-t-[28px] bg-navy px-8 py-7">
+        <div class="flex flex-col gap-4 rounded-t-[28px] bg-navy px-8 py-7 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Pasajero</p>
             <h2 class="mt-1 text-2xl font-bold text-white">

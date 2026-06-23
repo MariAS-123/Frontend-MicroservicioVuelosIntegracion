@@ -388,7 +388,7 @@ onMounted(async () => {
 
 <template>
   <section class="space-y-5">
-    <div class="flex items-start justify-between gap-4">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
       <div>
         <h1 class="text-[2rem] font-bold text-navy">Gestión de Clientes</h1>
         <p class="mt-1.5 text-sm text-text-muted">Administra los clientes del sistema sin mezclarlos con pasajeros.</p>
@@ -467,7 +467,7 @@ onMounted(async () => {
       <div class="w-full max-w-3xl rounded-[28px] bg-white shadow-2xl">
 
         <!-- Encabezado -->
-        <div class="flex items-start justify-between gap-4 rounded-t-[28px] bg-navy px-8 py-7">
+        <div class="flex flex-col gap-4 rounded-t-[28px] bg-navy px-8 py-7 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <p class="text-xs font-semibold uppercase tracking-[0.18em] text-slate-400">Cliente</p>
             <h2 class="mt-1 text-2xl font-bold text-white">

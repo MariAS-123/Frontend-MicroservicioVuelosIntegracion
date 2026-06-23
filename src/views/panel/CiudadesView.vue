@@ -210,7 +210,7 @@ onMounted(cargarTodo)
 
 <template>
   <section class="space-y-5">
-    <div class="flex items-start justify-between gap-4">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
       <div>
         <h1 class="text-[2rem] font-bold text-navy">Gestion de Ciudades</h1>
         <p class="mt-1.5 text-sm text-text-muted">Administra las ciudades con servicio de MPAS Airways (Solo ADMIN).</p>
@@ -233,8 +233,8 @@ onMounted(cargarTodo)
       <InputApp v-model="busqueda" placeholder="Buscar por ciudad, pais, zona o codigo postal..." />
     </section>
 
-    <section class="overflow-hidden rounded-[24px] bg-white shadow-sm">
-      <div class="grid grid-cols-[1.4fr_1.1fr_1.2fr_0.9fr_0.7fr_110px] gap-4 bg-slate-50 px-5 py-3.5 text-sm font-semibold text-navy">
+    <section class="overflow-x-auto rounded-[24px] bg-white shadow-sm">
+      <div class="grid min-w-[820px] grid-cols-[1.4fr_1.1fr_1.2fr_0.9fr_0.7fr_110px] gap-4 bg-slate-50 px-5 py-3.5 text-sm font-semibold text-navy">
         <span>Ciudad</span>
         <span>Pais</span>
         <span>Zona horaria</span>
@@ -250,7 +250,7 @@ onMounted(cargarTodo)
         <div
           v-for="ciudad in ciudadesFiltradas"
           :key="ciudad.idCiudad"
-          class="grid grid-cols-[1.4fr_1.1fr_1.2fr_0.9fr_0.7fr_110px] items-center gap-4 px-5 py-4"
+          class="grid min-w-[820px] grid-cols-[1.4fr_1.1fr_1.2fr_0.9fr_0.7fr_110px] items-center gap-4 px-5 py-4"
         >
           <div class="flex items-center gap-3">
             <div class="flex h-11 w-11 items-center justify-center rounded-2xl bg-slate-100 text-navy">

@@ -23,8 +23,8 @@ async function handleLogout() {
 <template>
   <div class="min-h-screen bg-background">
     <header class="sticky top-0 z-40 border-b border-white/10 bg-navy shadow-lg">
-      <div class="mx-auto flex max-w-7xl items-center justify-between px-4 py-3 sm:px-6 lg:px-8">
-        <RouterLink to="/" class="flex items-center gap-3">
+      <div class="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:px-8">
+        <RouterLink to="/" class="flex min-w-0 items-center gap-3">
           <img :src="IMAGENES.logoPrincipal" alt="MPAS Airways" class="h-10 object-contain" />
         </RouterLink>
 
@@ -33,7 +33,7 @@ async function handleLogout() {
           <RouterLink :to="{ name: 'buscar-vuelos' }" class="transition-colors hover:text-gold-light">Vuelos</RouterLink>
         </nav>
 
-        <div class="flex items-center gap-3">
+        <div class="flex shrink-0 items-center gap-3">
           <RouterLink
             :to="{ name: 'cliente-perfil' }"
             class="hidden text-base font-semibold text-gold transition-colors hover:text-gold-light md:block"
@@ -42,7 +42,7 @@ async function handleLogout() {
           </RouterLink>
           <button
             type="button"
-            class="rounded-2xl border border-gold/50 bg-gold-light px-4 py-2 text-sm font-semibold text-navy transition-colors hover:bg-gold"
+            class="rounded-2xl border border-gold/50 bg-gold-light px-3 py-2 text-sm font-semibold text-navy transition-colors hover:bg-gold sm:px-4"
             @click="handleLogout"
           >
             Cerrar sesión

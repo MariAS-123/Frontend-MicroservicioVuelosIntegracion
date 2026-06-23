@@ -283,7 +283,7 @@ onMounted(cargarPerfil)
     </div>
 
     <div v-else class="grid gap-6 lg:grid-cols-[0.78fr_1.4fr]">
-      <aside class="rounded-[30px] bg-white p-8 text-center shadow-sm">
+      <aside class="rounded-[30px] bg-white p-6 text-center shadow-sm sm:p-8">
         <div class="mx-auto flex h-32 w-32 items-center justify-center rounded-full bg-slate-100 text-navy">
           <svg class="h-16 w-16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M16 14a4 4 0 10-8 0m8 0a4 4 0 11-8 0m8 0v1a2 2 0 002 2h1m-11-3v1a2 2 0 01-2 2H5" />
@@ -299,11 +299,11 @@ onMounted(cargarPerfil)
         </div>
       </aside>
 
-      <section class="rounded-[30px] bg-white p-8 shadow-sm">
+      <section class="rounded-[30px] bg-white p-6 shadow-sm sm:p-8">
         <div class="flex flex-col gap-4 border-b border-slate-200 pb-6 sm:flex-row sm:items-center sm:justify-between">
           <h2 class="text-3xl font-semibold text-navy">Información Personal</h2>
 
-          <div class="flex gap-3">
+          <div class="flex flex-col gap-3 sm:flex-row">
             <button
               v-if="!editando"
               type="button"

@@ -962,9 +962,9 @@ onMounted(async () => {
               </div>
 
               <div class="mt-6 border-t border-slate-200 pt-6">
-                <div class="flex items-center justify-between">
-                  <span class="text-2xl font-semibold text-navy">Total a pagar</span>
-                  <span class="text-4xl font-light text-navy">{{ moneda(totalPagar) }}</span>
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <span class="text-xl font-semibold text-navy sm:text-2xl">Total a pagar</span>
+                  <span class="text-3xl font-light text-navy sm:text-4xl">{{ moneda(totalPagar) }}</span>
                 </div>
               </div>
 
@@ -1110,14 +1110,14 @@ onMounted(async () => {
 
     <div
       v-if="mostrarModalPagoSimulado"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-slate-950/50 px-4 py-8"
+      class="fixed inset-0 z-50 flex items-start justify-center bg-slate-950/50 px-3 py-4 sm:items-center sm:px-4 sm:py-8"
       @click.self="cerrarPagoSimulado"
     >
       <form
-        class="w-full max-w-2xl rounded-[28px] bg-white p-6 shadow-2xl sm:p-8"
+        class="max-h-[calc(100dvh-2rem)] w-full max-w-2xl overflow-y-auto rounded-[24px] bg-white p-4 shadow-2xl sm:rounded-[28px] sm:p-8"
         @submit.prevent="confirmarPagoSimulado"
       >
-        <div class="flex items-start justify-between gap-4">
+        <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
           <div>
             <p class="text-sm font-semibold uppercase tracking-[0.24em] text-gold-dark">Pago seguro</p>
             <h2 class="mt-2 text-2xl font-bold text-navy">Pasarela de pago</h2>
@@ -1132,7 +1132,7 @@ onMounted(async () => {
 
         <div
           v-if="estadoPagoSimulado === 'processing' || estadoPagoSimulado === 'confirming'"
-          class="mt-8 flex min-h-[440px] flex-col items-center justify-center text-center"
+          class="mt-8 flex min-h-[320px] flex-col items-center justify-center text-center sm:min-h-[440px]"
         >
           <div class="relative h-40 w-40">
             <div class="absolute inset-0 rounded-full border border-navy/15"></div>
@@ -1157,7 +1157,7 @@ onMounted(async () => {
 
         <div
           v-else-if="estadoPagoSimulado === 'approved'"
-          class="mt-8 flex min-h-[440px] flex-col items-center justify-center text-center"
+          class="mt-8 flex min-h-[320px] flex-col items-center justify-center text-center sm:min-h-[440px]"
         >
           <div class="flex h-28 w-28 items-center justify-center rounded-full bg-emerald-500 text-white shadow-lg shadow-emerald-500/20">
             <svg class="h-14 w-14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1173,13 +1173,13 @@ onMounted(async () => {
           {{ errorPagoSimulado }}
         </div>
 
-        <div class="mt-6 rounded-2xl bg-slate-50 px-5 py-5">
-          <div class="flex items-center justify-between gap-4">
+        <div class="mt-6 rounded-2xl bg-slate-50 px-4 py-4 sm:px-5 sm:py-5">
+          <div class="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
             <div>
               <p class="text-sm text-text-muted">Total a pagar</p>
-              <p class="mt-1 text-3xl font-bold text-navy">{{ moneda(totalPagar) }}</p>
+              <p class="mt-1 text-2xl font-bold text-navy sm:text-3xl">{{ moneda(totalPagar) }}</p>
             </div>
-            <div class="text-right text-sm text-text-muted">
+            <div class="text-sm text-text-muted sm:text-right">
               <p>{{ itemsPago.length }} pasajero{{ itemsPago.length === 1 ? '' : 's' }}</p>
               <p>IVA incluido</p>
             </div>
@@ -1304,7 +1304,7 @@ onMounted(async () => {
 
         <button
           type="submit"
-          class="mt-6 w-full rounded-2xl bg-gold px-6 py-4 font-semibold text-navy transition-colors hover:bg-gold-light disabled:cursor-not-allowed disabled:bg-gold/50"
+          class="sticky bottom-0 z-10 mt-6 w-full rounded-2xl bg-gold px-6 py-4 font-semibold text-navy shadow-[0_-10px_24px_rgba(255,255,255,0.92)] transition-colors hover:bg-gold-light disabled:cursor-not-allowed disabled:bg-gold/50"
           :disabled="procesandoPago || procesandoPagoSimulado"
         >
           {{ procesandoPagoSimulado || procesandoPago ? 'Procesando...' : 'Procesar pago' }}

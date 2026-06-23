@@ -131,7 +131,7 @@ onMounted(cargarFacturas)
           <div
             v-for="factura in facturas"
             :key="factura.idFactura"
-            class="grid gap-4 px-8 py-6 lg:grid-cols-[1.1fr_1fr_1.7fr_1fr_1fr_110px] lg:items-center"
+            class="grid gap-4 px-5 py-6 sm:px-8 lg:grid-cols-[1.1fr_1fr_1.7fr_1fr_1fr_110px] lg:items-center"
           >
             <div class="font-semibold text-navy">{{ factura.numero || `INV-${factura.idFactura}` }}</div>
             <div class="text-text-muted">{{ longDate(factura.fecha) }}</div>
@@ -160,7 +160,7 @@ onMounted(cargarFacturas)
     </section>
 
     <section v-if="facturaActiva" class="rounded-[30px] bg-white p-8 shadow-sm">
-      <div class="flex items-center justify-between gap-4">
+      <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
         <h2 class="text-2xl font-semibold text-navy">Detalle de Factura</h2>
         <button
           type="button"

@@ -184,11 +184,11 @@ onMounted(cargarDetalle)
             <h1 class="text-3xl font-bold text-navy">Detalles del Vuelo</h1>
 
             <section class="overflow-hidden rounded-[28px] bg-white shadow-sm">
-              <div class="bg-navy px-8 py-10 text-white">
+              <div class="bg-navy px-5 py-8 text-white sm:px-8 sm:py-10">
                 <div class="grid gap-8 md:grid-cols-3 md:items-center">
                   <div>
-                    <p class="text-5xl font-light">{{ horaLegible(vuelo.fechaHoraSalida) }}</p>
-                    <p class="mt-2 text-2xl font-semibold">{{ vuelo.nombreOrigen }}</p>
+                    <p class="text-3xl font-light sm:text-5xl">{{ horaLegible(vuelo.fechaHoraSalida) }}</p>
+                    <p class="mt-2 break-words text-xl font-semibold sm:text-2xl">{{ vuelo.nombreOrigen }}</p>
                     <p class="text-white/80">{{ vuelo.codigoOrigen }}</p>
                   </div>
 
@@ -205,28 +205,28 @@ onMounted(cargarDetalle)
                   </div>
 
                   <div class="md:text-right">
-                    <p class="text-5xl font-light">{{ horaLegible(vuelo.fechaHoraLlegada) }}</p>
-                    <p class="mt-2 text-2xl font-semibold">{{ vuelo.nombreDestino }}</p>
+                    <p class="text-3xl font-light sm:text-5xl">{{ horaLegible(vuelo.fechaHoraLlegada) }}</p>
+                    <p class="mt-2 break-words text-xl font-semibold sm:text-2xl">{{ vuelo.nombreDestino }}</p>
                     <p class="text-white/80">{{ vuelo.codigoDestino }}</p>
                   </div>
                 </div>
 
                 <div class="mt-8 border-t border-white/20 pt-6">
-                  <div class="flex items-center gap-4">
+                  <div class="flex min-w-0 items-center gap-4">
                     <div class="flex h-12 w-12 items-center justify-center rounded-2xl bg-white/15">
                       <svg class="h-6 w-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2 16l20-5-8 8-2.5-5.5L6 11l-4-1 20-5-5 20-3.5-7L2 16z" />
                       </svg>
                     </div>
-                    <div>
-                      <p class="text-2xl font-semibold">{{ vuelo.codigoDisplay }}</p>
+                    <div class="min-w-0">
+                      <p class="break-words text-xl font-semibold sm:text-2xl">{{ vuelo.codigoDisplay }}</p>
                       <p class="text-white/80">{{ vuelo.aeronave }}</p>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div class="space-y-8 px-8 py-8">
+              <div class="space-y-8 px-5 py-6 sm:px-8 sm:py-8">
                 <section>
                   <h2 class="text-2xl font-bold text-navy">Itinerario del Vuelo</h2>
                   <div class="mt-6 space-y-8">
@@ -234,19 +234,19 @@ onMounted(cargarDetalle)
                       <span class="absolute left-0 top-2 h-3 w-3 rounded-full bg-navy" />
                       <div class="absolute left-[5px] top-5 h-16 w-px bg-slate-300" />
                       <div class="flex items-center gap-3">
-                        <p class="text-4xl font-light text-navy">{{ horaLegible(vuelo.fechaHoraSalida) }}</p>
+                        <p class="text-3xl font-light text-navy sm:text-4xl">{{ horaLegible(vuelo.fechaHoraSalida) }}</p>
                         <p class="text-text-muted">{{ fechaLegible(vuelo.fechaHoraSalida) }}</p>
                       </div>
-                      <p class="mt-2 text-xl font-semibold text-navy">{{ vuelo.nombreOrigen }} ({{ vuelo.codigoOrigen }})</p>
+                      <p class="mt-2 break-words text-lg font-semibold text-navy sm:text-xl">{{ vuelo.nombreOrigen }} ({{ vuelo.codigoOrigen }})</p>
                     </div>
 
                     <div class="relative pl-9">
                       <span class="absolute left-0 top-2 h-3 w-3 rounded-full bg-gold" />
                       <div class="flex items-center gap-3">
-                        <p class="text-4xl font-light text-navy">{{ horaLegible(vuelo.fechaHoraLlegada) }}</p>
+                        <p class="text-3xl font-light text-navy sm:text-4xl">{{ horaLegible(vuelo.fechaHoraLlegada) }}</p>
                         <p class="text-text-muted">{{ fechaLegible(vuelo.fechaHoraLlegada) }}</p>
                       </div>
-                      <p class="mt-2 text-xl font-semibold text-navy">{{ vuelo.nombreDestino }} ({{ vuelo.codigoDestino }})</p>
+                      <p class="mt-2 break-words text-lg font-semibold text-navy sm:text-xl">{{ vuelo.nombreDestino }} ({{ vuelo.codigoDestino }})</p>
                     </div>
                   </div>
                 </section>
@@ -290,27 +290,27 @@ onMounted(cargarDetalle)
           </div>
 
           <aside class="lg:sticky lg:top-24 lg:self-start">
-            <div class="rounded-[28px] bg-white p-8 shadow-sm">
+            <div class="rounded-[28px] bg-white p-5 shadow-sm sm:p-8">
               <h2 class="text-2xl font-bold text-navy">Resumen de Precio</h2>
               <div class="mt-6 space-y-4 text-text-muted">
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between gap-4">
                   <span>{{ resumenPrecio.pasajeros }} {{ resumenPrecio.pasajeros === 1 ? 'Adulto' : 'Pasajeros' }}</span>
                   <span>{{ moneda(resumenPrecio.subtotal) }}</span>
                 </div>
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between gap-4">
                   <span>Tasas e impuestos</span>
                   <span>{{ moneda(resumenPrecio.impuestos) }}</span>
                 </div>
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between gap-4">
                   <span>Cargos por servicio</span>
                   <span>{{ moneda(resumenPrecio.servicio) }}</span>
                 </div>
               </div>
 
               <div class="mt-6 border-t border-slate-200 pt-6">
-                <div class="flex items-center justify-between">
-                  <span class="text-2xl font-semibold text-navy">Total</span>
-                  <span class="text-5xl font-light text-navy">{{ moneda(resumenPrecio.total) }}</span>
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <span class="text-xl font-semibold text-navy sm:text-2xl">Total</span>
+                  <span class="text-3xl font-light text-navy sm:text-5xl">{{ moneda(resumenPrecio.total) }}</span>
                 </div>
               </div>
 
@@ -334,7 +334,7 @@ onMounted(cargarDetalle)
                 <p class="text-sm">Fecha de viaje</p>
                 <p class="mt-1 text-lg font-semibold text-navy">{{ fechaLegible(vuelo.fechaHoraSalida) }}</p>
                 <p class="mt-4 text-sm">Ruta</p>
-                <p class="mt-1 text-lg font-semibold text-navy">{{ vuelo.nombreOrigen }} - {{ vuelo.nombreDestino }}</p>
+                <p class="mt-1 break-words text-lg font-semibold text-navy">{{ vuelo.nombreOrigen }} - {{ vuelo.nombreDestino }}</p>
               </div>
             </div>
           </aside>

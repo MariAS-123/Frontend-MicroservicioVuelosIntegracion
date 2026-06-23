@@ -200,7 +200,7 @@ onMounted(cargarDetalle)
 
 <template>
   <section class="space-y-6">
-    <div class="flex items-center justify-between gap-4">
+    <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
       <div>
         <h1 class="text-3xl font-bold text-navy">Detalle de Reserva</h1>
         <p v-if="detalle?.codigoReserva" class="mt-2 text-text-muted">Código: {{ detalle.codigoReserva }}</p>
@@ -226,10 +226,10 @@ onMounted(cargarDetalle)
 
     <template v-else-if="detalle">
       <section class="overflow-hidden rounded-[30px] bg-white shadow-sm">
-        <div class="grid gap-8 bg-navy px-8 py-8 text-white md:grid-cols-[1fr_0.8fr_1fr] md:items-center">
+        <div class="grid gap-8 bg-navy px-5 py-6 text-white sm:px-8 sm:py-8 md:grid-cols-[1fr_0.8fr_1fr] md:items-center">
           <div>
-            <p class="text-4xl font-light">{{ shortTime(detalle.fechaInicio) }}</p>
-            <p class="mt-3 text-2xl font-semibold">{{ detalle.codigoOrigen }}</p>
+            <p class="text-3xl font-light sm:text-4xl">{{ shortTime(detalle.fechaInicio) }}</p>
+            <p class="mt-3 text-xl font-semibold sm:text-2xl">{{ detalle.codigoOrigen }}</p>
             <p class="mt-2 text-white/80">{{ detalle.ciudadOrigen }}</p>
           </div>
 
@@ -245,14 +245,14 @@ onMounted(cargarDetalle)
             <p class="mt-3 text-gold-light">Emitida</p>
           </div>
 
-          <div class="text-right">
-            <p class="text-4xl font-light">{{ shortTime(detalle.fechaFin) }}</p>
-            <p class="mt-3 text-2xl font-semibold">{{ detalle.codigoDestino }}</p>
+          <div class="md:text-right">
+            <p class="text-3xl font-light sm:text-4xl">{{ shortTime(detalle.fechaFin) }}</p>
+            <p class="mt-3 text-xl font-semibold sm:text-2xl">{{ detalle.codigoDestino }}</p>
             <p class="mt-2 text-white/80">{{ detalle.ciudadDestino }}</p>
           </div>
         </div>
 
-        <div class="grid gap-8 px-8 py-8 md:grid-cols-2">
+        <div class="grid gap-8 px-5 py-6 sm:px-8 sm:py-8 md:grid-cols-2">
           <div>
             <h2 class="text-2xl font-semibold text-navy">Información del Vuelo</h2>
             <div class="mt-6 space-y-5 text-text-muted">
@@ -291,22 +291,22 @@ onMounted(cargarDetalle)
         </div>
       </section>
 
-      <section class="rounded-[30px] bg-white p-8 shadow-sm">
+      <section class="rounded-[30px] bg-white p-6 shadow-sm sm:p-8">
         <h2 class="text-2xl font-semibold text-navy">Resumen de Pago</h2>
         <div class="mt-6 space-y-4 text-lg text-text-muted">
-          <div class="flex items-center justify-between">
+          <div class="flex items-center justify-between gap-4">
             <span>Tarifa base</span>
             <span>{{ money(factura?.subtotal || 0) }}</span>
           </div>
-          <div class="flex items-center justify-between">
+          <div class="flex items-center justify-between gap-4">
             <span>Tasas e impuestos</span>
             <span>{{ money(factura?.iva || 0) }}</span>
           </div>
-          <div class="flex items-center justify-between">
+          <div class="flex items-center justify-between gap-4">
             <span>Cargo por servicio</span>
             <span>{{ money(factura?.cargoServicio || 0) }}</span>
           </div>
-          <div class="flex items-center justify-between border-t border-slate-200 pt-4 text-2xl font-semibold text-navy">
+          <div class="flex items-center justify-between gap-4 border-t border-slate-200 pt-4 text-xl font-semibold text-navy sm:text-2xl">
             <span>Total pagado</span>
             <span>{{ money(factura?.total || 0) }}</span>
           </div>

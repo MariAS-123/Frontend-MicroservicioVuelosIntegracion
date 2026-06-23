@@ -380,9 +380,9 @@ onMounted(async () => {
 <template>
   <section class="min-h-[calc(100vh-64px)] bg-background py-10">
     <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
-      <div class="rounded-[28px] bg-white p-6 shadow-sm sm:p-8">
+      <div class="w-full min-w-0 rounded-[24px] bg-white p-4 shadow-sm sm:rounded-[28px] sm:p-8">
         <p class="text-sm font-semibold uppercase tracking-[0.28em] text-gold-dark">Vuelos</p>
-        <h1 class="mt-2 text-3xl font-bold text-navy">Vuelos Disponibles</h1>
+        <h1 class="mt-2 break-words text-2xl font-bold text-navy sm:text-3xl">Vuelos Disponibles</h1>
         <div class="mt-4 flex flex-wrap gap-x-3 gap-y-2 text-sm text-text-muted">
           <span>{{ resumenBusqueda.origen }}</span>
           <span>-</span>
@@ -392,12 +392,12 @@ onMounted(async () => {
         </div>
 
         <form
-          class="mt-8 grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1.2fr)_220px_160px]"
+          class="mt-8 grid min-w-0 gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(0,1.2fr)_220px_160px]"
           @submit.prevent="sincronizarQuery(); buscar()"
         >
           <select
             v-model="form.origen"
-            class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-text-main outline-none transition focus:border-blue-accent focus:ring-4 focus:ring-blue-accent/10"
+            class="w-full min-w-0 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-text-main outline-none transition focus:border-blue-accent focus:ring-4 focus:ring-blue-accent/10"
           >
             <option value="">Origen</option>
             <option v-for="opcion in opcionesAeropuertos" :key="opcion.valor" :value="opcion.valor">
@@ -407,7 +407,7 @@ onMounted(async () => {
 
           <select
             v-model="form.destino"
-            class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-text-main outline-none transition focus:border-blue-accent focus:ring-4 focus:ring-blue-accent/10"
+            class="w-full min-w-0 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-text-main outline-none transition focus:border-blue-accent focus:ring-4 focus:ring-blue-accent/10"
           >
             <option value="">Destino</option>
             <option v-for="opcion in opcionesAeropuertos" :key="opcion.valor" :value="opcion.valor">
@@ -418,7 +418,7 @@ onMounted(async () => {
           <input
             v-model="form.salida"
             type="date"
-            class="rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-text-main outline-none transition focus:border-blue-accent focus:ring-4 focus:ring-blue-accent/10"
+            class="w-full min-w-0 rounded-2xl border border-slate-200 bg-slate-50 px-4 py-3 text-text-main outline-none transition focus:border-blue-accent focus:ring-4 focus:ring-blue-accent/10"
           />
 
           <button
@@ -460,7 +460,7 @@ onMounted(async () => {
             :key="vuelo.idVuelo"
             class="overflow-hidden rounded-[28px] bg-white shadow-sm transition-shadow hover:shadow-md"
           >
-            <div class="grid gap-5 px-6 py-5 lg:grid-cols-[240px_1fr_210px] lg:items-center">
+            <div class="grid min-w-0 gap-5 px-4 py-5 sm:px-6 lg:grid-cols-[240px_1fr_210px] lg:items-center">
               <div class="space-y-6">
                 <div class="flex items-start gap-3">
                   <div class="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-navy text-white">
@@ -475,8 +475,8 @@ onMounted(async () => {
                 </div>
 
                 <div>
-                  <p class="text-[2.15rem] font-light leading-none text-navy">{{ horaLegible(vuelo.fechaHoraSalida) }}</p>
-                  <p class="mt-3 text-[1.3rem] font-semibold leading-none text-navy">{{ vuelo.codigoOrigen }}</p>
+                  <p class="text-3xl font-light leading-none text-navy sm:text-[2.15rem]">{{ horaLegible(vuelo.fechaHoraSalida) }}</p>
+                  <p class="mt-3 text-xl font-semibold leading-none text-navy sm:text-[1.3rem]">{{ vuelo.codigoOrigen }}</p>
                   <p class="mt-2 text-sm text-text-muted">{{ vuelo.ciudadOrigen }}</p>
                 </div>
               </div>
@@ -497,16 +497,16 @@ onMounted(async () => {
                 </div>
 
                 <div class="text-left md:text-right">
-                  <p class="text-[2.15rem] font-light leading-none text-navy">{{ horaLegible(vuelo.fechaHoraLlegada) }}</p>
-                  <p class="mt-3 text-[1.3rem] font-semibold leading-none text-navy">{{ vuelo.codigoDestino }}</p>
+                  <p class="text-3xl font-light leading-none text-navy sm:text-[2.15rem]">{{ horaLegible(vuelo.fechaHoraLlegada) }}</p>
+                  <p class="mt-3 text-xl font-semibold leading-none text-navy sm:text-[1.3rem]">{{ vuelo.codigoDestino }}</p>
                   <p class="mt-2 text-sm text-text-muted">{{ vuelo.ciudadDestino }}</p>
                 </div>
               </div>
 
-              <div class="border-l border-slate-200 pl-6">
-                <p class="text-right text-sm text-text-muted">Desde</p>
-                <p class="text-right text-[2.85rem] font-light leading-none text-navy">{{ moneda(vuelo.precioBase) }}</p>
-                <p class="mt-2 text-right text-sm text-text-muted">por persona</p>
+              <div class="border-t border-slate-200 pt-5 lg:border-l lg:border-t-0 lg:pl-6 lg:pt-0">
+                <p class="text-sm text-text-muted lg:text-right">Desde</p>
+                <p class="text-3xl font-light leading-none text-navy sm:text-[2.85rem] lg:text-right">{{ moneda(vuelo.precioBase) }}</p>
+                <p class="mt-2 text-sm text-text-muted lg:text-right">por persona</p>
                 <button
                   type="button"
                   class="mt-5 w-full rounded-2xl bg-gold px-5 py-3 text-base font-semibold text-navy transition-colors hover:bg-gold-light"
@@ -537,10 +537,10 @@ onMounted(async () => {
             </div>
 
             <Transition name="expand">
-              <div v-if="vueloExpandido === vuelo.idVuelo" class="border-t border-slate-200 bg-slate-50/90 px-6 py-8 lg:px-8">
+              <div v-if="vueloExpandido === vuelo.idVuelo" class="border-t border-slate-200 bg-slate-50/90 px-4 py-6 sm:px-6 sm:py-8 lg:px-8">
                 <div class="grid gap-8 md:grid-cols-3">
                   <div>
-                    <h3 class="text-2xl font-semibold text-navy">Servicios Incluidos</h3>
+                    <h3 class="text-xl font-semibold text-navy sm:text-2xl">Servicios Incluidos</h3>
                     <ul class="mt-4 space-y-3 text-text-muted">
                       <li class="text-emerald-600">- Equipaje de mano (10kg)</li>
                       <li class="text-amber-600">- Equipaje de bodega (opcional)</li>
@@ -549,14 +549,14 @@ onMounted(async () => {
                   </div>
 
                   <div>
-                    <h3 class="text-2xl font-semibold text-navy">Informacion Adicional</h3>
+                    <h3 class="text-xl font-semibold text-navy sm:text-2xl">Informacion Adicional</h3>
                     <div class="mt-4 space-y-3 text-text-muted">
                       <p>Aeronave: {{ vuelo.aeronave }}</p>
                     </div>
                   </div>
 
                   <div>
-                    <h3 class="text-2xl font-semibold text-navy">Politicas</h3>
+                    <h3 class="text-xl font-semibold text-navy sm:text-2xl">Politicas</h3>
                     <div class="mt-4 space-y-3 text-text-muted">
                       <p>Check-in: Online o aeropuerto</p>
                       <p>3 horas antes en el aeropuerto</p>

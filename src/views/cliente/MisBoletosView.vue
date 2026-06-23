@@ -322,29 +322,29 @@ onMounted(cargarBoletos)
         :key="reserva.idReserva || `${reserva.numeroVuelo}-${reserva.fecha}`"
         class="overflow-hidden rounded-[28px] bg-white shadow-sm"
       >
-        <div class="bg-[linear-gradient(120deg,#12284A_0%,#2F4360_100%)] px-8 py-8 text-white">
-          <div class="flex items-start justify-between gap-4">
+        <div class="bg-[linear-gradient(120deg,#12284A_0%,#2F4360_100%)] px-5 py-6 text-white sm:px-8 sm:py-8">
+          <div class="flex flex-col gap-4 sm:flex-row sm:items-start sm:justify-between">
             <div class="flex h-14 w-14 items-center justify-center rounded-[18px] bg-white/10">
               <svg class="h-8 w-8" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.8" d="M5 9a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2v2a2 2 0 0 0 0 4v2a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2v-2a2 2 0 0 0 0-4V9Z" />
               </svg>
             </div>
 
-            <div class="text-right">
+            <div class="min-w-0 sm:text-right">
               <p class="text-white/70">Reserva</p>
-              <p class="mt-1 text-3xl font-semibold">
+              <p class="mt-1 break-words text-2xl font-semibold sm:text-3xl">
                 {{ reserva.codigoReserva || `Reserva ${reserva.idReserva}` }}
               </p>
             </div>
           </div>
 
           <div class="mt-10">
-            <p class="text-4xl font-light">{{ reserva.origen || 'Origen' }} → {{ reserva.destino || 'Destino' }}</p>
-            <p class="mt-2 text-2xl text-white/80">{{ reserva.numeroVuelo || 'Vuelo emitido' }}</p>
+            <p class="break-words text-3xl font-light sm:text-4xl">{{ reserva.origen || 'Origen' }} → {{ reserva.destino || 'Destino' }}</p>
+            <p class="mt-2 break-words text-xl text-white/80 sm:text-2xl">{{ reserva.numeroVuelo || 'Vuelo emitido' }}</p>
           </div>
         </div>
 
-        <div class="px-8 py-8">
+        <div class="px-5 py-6 sm:px-8 sm:py-8">
           <div class="grid gap-6 md:grid-cols-4">
             <div>
               <p class="text-text-muted">Fecha</p>

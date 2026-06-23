@@ -101,9 +101,9 @@ onMounted(() => {
       <div class="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
         <div class="grid gap-8 lg:grid-cols-[1.35fr_0.8fr]">
           <div class="space-y-6">
-            <div class="rounded-[28px] bg-white p-8 shadow-sm">
+            <div class="rounded-[28px] bg-white p-5 shadow-sm sm:p-8">
               <p class="text-sm font-semibold uppercase tracking-[0.28em] text-gold-dark">Paso 4</p>
-              <h1 class="mt-3 text-3xl font-bold text-navy">Equipaje</h1>
+              <h1 class="mt-3 text-2xl font-bold text-navy sm:text-3xl">Equipaje</h1>
               <p class="mt-4 text-text-muted">
                 MPAS Airways permite agregar 1 equipaje de bodega extra por pasajero, con un peso maximo de 23 kg y un costo fijo de $45.
               </p>
@@ -116,7 +116,7 @@ onMounted(() => {
             >
               <div class="flex flex-col gap-2 border-b border-slate-200 pb-5 sm:flex-row sm:items-center sm:justify-between">
                 <div>
-                  <h2 class="text-2xl font-semibold text-navy">{{ item.nombre }}</h2>
+                  <h2 class="break-words text-xl font-semibold text-navy sm:text-2xl">{{ item.nombre }}</h2>
                   <p class="mt-1 text-sm text-text-muted">Asiento seleccionado: {{ item.numeroAsiento }}</p>
                 </div>
                 <span class="rounded-full bg-slate-100 px-3 py-1 text-sm font-medium text-slate-600">
@@ -131,7 +131,7 @@ onMounted(() => {
                     <p class="mt-1 text-sm text-text-muted">Maximo 10kg por pasajero.</p>
                     <p class="mt-2 text-sm font-medium text-emerald-600">Siempre incluido en tu tarifa</p>
                   </div>
-                  <div class="text-right">
+                  <div class="sm:text-right">
                     <p class="text-sm text-text-muted">Costo</p>
                     <p class="text-lg font-semibold text-emerald-600">Incluido</p>
                   </div>
@@ -143,7 +143,7 @@ onMounted(() => {
                       <p class="text-xl font-semibold text-navy">Equipaje de Bodega</p>
                       <p class="mt-1 text-sm text-text-muted">Maximo 23kg por pasajero.</p>
                     </div>
-                    <div class="text-right">
+                    <div class="sm:text-right">
                       <p class="text-sm text-text-muted">Costo fijo</p>
                       <p class="text-2xl font-light text-navy">{{ moneda(COSTO_BODEGA) }}</p>
                     </div>
@@ -192,10 +192,10 @@ onMounted(() => {
           </div>
 
           <aside class="lg:sticky lg:top-24 lg:self-start">
-            <div class="rounded-[28px] bg-white p-8 shadow-sm">
+            <div class="rounded-[28px] bg-white p-5 shadow-sm sm:p-8">
               <h2 class="text-2xl font-bold text-navy">Resumen de Equipaje</h2>
               <div class="mt-6 space-y-4 text-text-muted">
-                <div class="flex items-center justify-between">
+                <div class="flex items-center justify-between gap-4">
                   <span>Equipaje de mano (10kg)</span>
                   <span class="font-semibold text-emerald-600">Incluido</span>
                 </div>
@@ -203,10 +203,10 @@ onMounted(() => {
                 <div
                   v-for="item in itemsEquipaje"
                   :key="`resumen-${item.pasajeroIndex}`"
-                  class="flex items-center justify-between border-t border-slate-100 pt-4"
+                  class="flex items-center justify-between gap-4 border-t border-slate-100 pt-4"
                 >
                   <div>
-                    <p class="font-medium text-navy">{{ item.nombre }}</p>
+                    <p class="break-words font-medium text-navy">{{ item.nombre }}</p>
                     <p class="text-sm text-text-muted">{{ item.equipajeBodega ? '1 maleta de bodega' : 'Sin bodega extra' }}</p>
                   </div>
                   <span class="font-semibold text-navy">{{ item.equipajeBodega ? moneda(COSTO_BODEGA) : moneda(0) }}</span>
@@ -214,9 +214,9 @@ onMounted(() => {
               </div>
 
               <div class="mt-6 border-t border-slate-200 pt-6">
-                <div class="flex items-center justify-between">
-                  <span class="text-2xl font-semibold text-navy">Costo adicional</span>
-                  <span class="text-4xl font-light text-navy">{{ moneda(totalExtra) }}</span>
+                <div class="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+                  <span class="text-xl font-semibold text-navy sm:text-2xl">Costo adicional</span>
+                  <span class="text-3xl font-light text-navy sm:text-4xl">{{ moneda(totalExtra) }}</span>
                 </div>
               </div>
 
